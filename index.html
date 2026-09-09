@@ -1502,8 +1502,8 @@
                 <input id="prodPrice_${p.id}" type="number" step="0.01" value="${Number(p.price||0).toFixed(2)}">
                 <select id="prodCategory_${p.id}">${allManagedCategories().filter(c=>!c.deleted).map(c=>`<option value="${c.id}" ${c.id===p.category?'selected':''}>${escapeAdminText(c.name)}</option>`).join('')}</select>
                 <select id="prodAvail_${p.id}"><option value="true" ${p.available!==false && !p.deleted?'selected':''}>Ativo</option><option value="false" ${p.available===false || p.deleted?'selected':''}>Oculto</option></select>
-                <input id="prodImage_${p.id}" type="file" accept="image/*" onchange="previewManagedImage('${p.id}')">
-                <button onclick="saveManagedProduct('${p.id}')">Salvar</button><button onclick="uploadManagedProductImage('${p.id}')">Atualizar foto</button><button onclick="removeManagedProductImage('${p.id}')">Remover foto</button><button style="background:#552;color:#fff" onclick="deleteManagedProduct('${p.id}')">Excluir item</button>
+                <input id="prodImage_${p.id}" type="file" accept="image/*" onchange="previewManagedImage('${p.id}'); uploadManagedProductImage('${p.id}')">
+                <button onclick="saveManagedProduct('${p.id}')">Salvar</button><button onclick="uploadManagedProductImage('${p.id}')">Salvar foto</button><button onclick="removeManagedProductImage('${p.id}')">Remover foto</button><button style="background:#552;color:#fff" onclick="deleteManagedProduct('${p.id}')">Excluir item</button>
             </div>`).join('');
         }
         async function saveManagedProduct(id){ const base=allManagedProducts().find(p=>p.id===id)||{}; const imageInput=document.getElementById('prodImage_'+id); let image=base.image||''; if(imageInput?.files?.[0]) image=await uploadImageFile(id,imageInput.files[0]); await db.ref('menuOverrides/'+id).update({name:base.name,description:base.description,category:document.getElementById('prodCategory_'+id).value,image,price:Number(document.getElementById('prodPrice_'+id).value||0),available:document.getElementById('prodAvail_'+id).value==='true',deleted:false}); alert('Produto atualizado.'); }
