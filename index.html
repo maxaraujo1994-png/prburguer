@@ -826,6 +826,7 @@
 
         .production-timer{display:inline-block;padding:4px 7px;border-radius:5px;font-size:.72rem;font-weight:800;margin:6px 0}.production-green{background:#174b39;color:#8ff7c9}.production-yellow{background:#5b501c;color:#fff19a}.production-orange{background:#6b3a18;color:#ffd0a0}.production-red{background:#6e201a;color:#ffb0a7}.production-overdue{background:#a60000;color:#fff}.pickup-ready-admin{color:#2ec4b6;font-weight:800}
 
+        .preview-role{display:inline-block;border:1px solid #c5a85c;color:#c5a85c;border-radius:12px;padding:3px 8px;font-size:.68rem}.preview-warning{background:#4a3417;border:1px solid #a7782e;color:#ffe0a0;padding:9px;border-radius:7px;font-size:.76rem;margin-bottom:10px}
 </style>
 </head>
 <body>
@@ -1269,6 +1270,7 @@
                         <button class="admin-tab" data-tab="kitchen" onclick="setAdminTab('kitchen')">🍳 Cozinha</button>
                         <button class="admin-tab" data-tab="deliverers" onclick="setAdminTab('deliverers')">🛵 Entregadores</button>
                         <button class="admin-tab" data-tab="delivery" onclick="setAdminTab('delivery')">🚚 Entrega</button>
+                        <button class="admin-tab" data-tab="permissionsPreview" onclick="setAdminTab('permissionsPreview')">🔐 Permissões</button>
                     </div>
                     <section id="adminPanel-orders" data-admin-panel="orders">
                         <div class="admin-toolbar">
@@ -1326,6 +1328,9 @@
                     <section id="adminPanel-delivery" data-admin-panel="delivery" style="display:none;">
                         <div class="delivery-admin-card"><h5>🚚 Cadastro da forma de entrega</h5><p class="ka-note">A alteração é salva no Firebase e aparece no carrinho em tempo real para os clientes.</p><div class="management-grid"><select id="deliveryModeAdmin" onchange="renderDeliverySettings()"><option value="fixed">Entrega com preço fixo</option><option value="free">Entrega grátis</option><option value="zones">Entrega por bairro ou região</option></select><input id="deliveryFixedFee" type="number" min="0" step="0.01" placeholder="Valor fixo da entrega"></div><button class="admin-action" style="margin-top:9px;" onclick="saveDeliverySettings()">Salvar forma de entrega</button><div id="deliveryFreePreview" class="ka-note" style="margin-top:9px;"></div></div>
                         <div class="delivery-admin-card"><h5>📍 Bairros e setores</h5><p class="ka-note">Cadastre quantos bairros quiser. O cliente selecionará o bairro no carrinho e a taxa será aplicada automaticamente.</p><div class="management-grid"><input id="deliveryZoneName" placeholder="Ex.: Santa Bárbara"><input id="deliveryZoneFee" type="number" min="0" step="0.01" placeholder="Taxa do bairro"><input id="deliveryZoneId" type="hidden"></div><div class="printer-actions" style="margin-top:9px;"><button class="admin-action" onclick="saveDeliveryZone()">Salvar bairro</button><button class="admin-action secondary" onclick="clearDeliveryZoneForm()">Limpar</button></div><div id="deliveryZonesAdminList" style="margin-top:10px;"></div></div>
+                    </section>
+                    <section id="adminPanel-permissionsPreview" data-admin-panel="permissionsPreview" style="display:none;">
+                        <div class="delivery-admin-card"><h5>🔐 Permissões — modo de teste</h5><div class="preview-warning">Esta tela é uma prévia segura. Nesta etapa nenhum acesso atual será bloqueado. Depois de validar os perfis, as regras de segurança serão aplicadas separadamente.</div><div id="previewCurrentRole" class="admin-system-status">Carregando...</div><button class="admin-action" style="margin-bottom:9px;" onclick="claimPreviewOwner()">Validar minha conta como proprietário</button><div class="management-grid"><input id="previewRoleUid" placeholder="UID do usuário Firebase"><input id="previewRoleEmail" placeholder="E-mail para identificação"><select id="previewRole"><option value="manager">Gerente</option><option value="kitchen">Cozinha</option><option value="delivery">Entregador</option><option value="viewer">Somente leitura</option><option value="owner">Proprietário</option></select></div><button class="admin-action" style="margin-top:9px;" onclick="savePreviewRole()">Salvar perfil de teste</button></div><div class="delivery-admin-card"><h5>Perfis cadastrados</h5><div id="previewRolesList"><p class="ka-note">Nenhum perfil cadastrado.</p></div></div>
                     </section>
                     <section id="adminPanel-kitchen" data-admin-panel="kitchen" style="display:none;">
                         <div class="ka-dashboard">
@@ -1494,6 +1499,8 @@
         let kitchenInventoryData = {};
         let kitchenRecipes = {};
         let kitchenInitialized = false;
+        let previewRolesData = {};
+        let previewRolesInitialized = false;
         let kitchenMovementsData = {};
         let kitchenAdvancedTab = 'overview';
         let deliverersData = {};
@@ -1528,6 +1535,7 @@
                     initRealtimeSync();
                     renderPrinterStatus();
                     initKitchenData();
+                    initPermissionsPreview();
                     initDeliveryData();
                     initCustomerConfirmationListener();
                     initDriverActionListener();
@@ -1761,6 +1769,11 @@
         async function sendOrderToDeliverer(key){const snap=await db.ref('orders/'+key).once('value'),order=snap.val(),driver=order&&deliverersData[order.assignedDriverId];if(!order||!driver)return alert('Selecione um entregador primeiro.');const phone=String(driver.phone||'').replace(/\D/g,'');if(phone.length<10)return alert('O entregador não tem um WhatsApp válido.');window.open('https://api.whatsapp.com/send?phone=55'+phone+'&text='+encodeURIComponent(driverMessage(order,driver)),'_blank');await db.ref('orders/'+key).update({deliveryStatus:'enviado',driverNotifiedAt:new Date().toISOString()});}
         async function setDeliveryStatus(key,status){const data={deliveryStatus:status,deliveryStatusAt:new Date().toISOString()};await db.ref('orders/'+key).update(data);const snap=await db.ref('orders/'+key).once('value');await syncPublicTracking(key,snap.val());}
         function renderDeliverers(){const box=document.getElementById('deliverersList');if(box){const rows=Object.entries(deliverersData);box.innerHTML=rows.length?rows.map(([id,d])=>`<div class="management-row"><div><strong>${escapeAdminText(d.name)}</strong><small>${escapeAdminText(d.phone||'')} · ${d.active===false?'Inativo':'Ativo'}${d.note?' · '+escapeAdminText(d.note):''} · Código: ${escapeAdminText(d.accessCode||'—')}</small></div><button onclick="editDeliverer('${id}')">Editar</button><button style="background:#552;color:#fff" onclick="deleteDeliverer('${id}')">Excluir</button></div>`).join(''):'<p class="ka-note">Nenhum entregador cadastrado.</p>';}const hist=document.getElementById('deliveryHistoryList');if(!hist)return;const done=Object.entries(adminOrdersCache).filter(([,o])=>o&&orderStatus(o)==='entregue'&&o.assignedDriverId);const sums={};done.forEach(([key,o])=>{const id=o.assignedDriverId;sums[id]??={count:0,total:0,delivery:0,rows:[]};sums[id].count++;sums[id].total+=Number(o.total||0);sums[id].delivery+=Number(o.delivery||0);sums[id].rows.push({key,o});});hist.innerHTML=Object.entries(sums).map(([id,x])=>`<details class="delivery-admin-card"><summary><strong>${escapeAdminText(deliverersData[id]?.name||'Entregador removido')}</strong> · ${x.count} entrega(s) · R$ ${x.total.toFixed(2).replace('.',',')}</summary><div class="delivery-history-row"><span>Total de pedidos</span><span>${x.count}</span><span>Faturamento</span><span>R$ ${x.total.toFixed(2).replace('.',',')}</span></div><div class="delivery-history-row"><span>Taxas de entrega</span><span>R$ ${x.delivery.toFixed(2).replace('.',',')}</span><span>Repasse estimado</span><span>R$ ${(x.count*Number(deliverersData[id]?.rate||0)).toFixed(2).replace('.',',')}</span></div>${x.rows.sort((a,b)=>String(b.o.deliveryCompletedAt||b.o.updatedAt||'').localeCompare(String(a.o.deliveryCompletedAt||a.o.updatedAt||''))).map(({key,o})=>`<div class="delivery-history-row"><strong>Pedido #${escapeAdminText(o.orderId||key.slice(-5))}</strong><span>${o.timestamp?new Date(o.timestamp).toLocaleDateString('pt-BR'):''}</span><span>${escapeAdminText(o.clientName||'Cliente')}</span><span>R$ ${Number(o.total||0).toFixed(2).replace('.',',')}</span></div>`).join('')}</details>`).join('')||'<p class="ka-note">Nenhuma entrega concluída ainda.</p>';}
+        const previewRoleLabels={owner:'Proprietário',manager:'Gerente',kitchen:'Cozinha',delivery:'Entregador',viewer:'Somente leitura'};
+        async function initPermissionsPreview(){if(previewRolesInitialized)return;previewRolesInitialized=true;try{const u=auth.currentUser;if(u){const own=await db.ref('userRoles/'+u.uid).once('value');if(!own.exists())await db.ref('userRoles/'+u.uid).set({uid:u.uid,email:u.email||'',role:'owner',active:true,storeId:'prburguer',createdAt:new Date().toISOString()});}db.ref('userRoles').on('value',snap=>{previewRolesData=snap.val()||{};renderPreviewRoles();},err=>{const box=document.getElementById('previewCurrentRole');if(box)box.innerHTML='<span style="color:#ff9e95">Não foi possível ler userRoles. Publique o database.rules.json da prévia.</span>';});}catch(e){const box=document.getElementById('previewCurrentRole');if(box)box.innerHTML='<span style="color:#ff9e95">A validação não foi salva. Publique primeiro as regras da prévia.</span>';}}
+        function claimPreviewOwner(){const u=auth.currentUser,box=document.getElementById('previewCurrentRole');if(!u){if(box)box.innerHTML='<span style="color:#ff9e95">Faça login novamente.</span>';return;}db.ref('userRoles/'+u.uid).set({uid:u.uid,email:u.email||'',role:'owner',active:true,storeId:'prburguer',createdAt:new Date().toISOString()}).then(()=>{if(box)box.innerHTML='Usuário atual: <span class="preview-role">Proprietário</span> · UID: <strong>'+escapeAdminText(u.uid)+'</strong>';alert('Usuário validado como proprietário.');}).catch(()=>{if(box)box.innerHTML='<span style="color:#ff9e95">Falha ao salvar. Publique as regras da prévia e tente novamente.</span>';});}
+        function renderPreviewRoles(){const box=document.getElementById('previewRolesList');if(!box)return;const u=auth.currentUser,me=u&&previewRolesData[u.uid];const current=document.getElementById('previewCurrentRole');if(current)current.innerHTML='Usuário atual: <span class="preview-role">'+(previewRoleLabels[me?.role]||'Ainda não definido')+'</span>'+(u?' · UID: <strong>'+escapeAdminText(u.uid)+'</strong>':'');const rows=Object.entries(previewRolesData);box.innerHTML=rows.length?rows.map(([uid,r])=>`<div class="management-row"><div><strong>${escapeAdminText(r.email||uid)}</strong><small>${escapeAdminText(previewRoleLabels[r.role]||r.role)} · ${escapeAdminText(uid)}</small></div></div>`).join(''):'<p class="ka-note">Nenhum perfil cadastrado.</p>';}
+        function savePreviewRole(){const uid=document.getElementById('previewRoleUid')?.value.trim(),email=document.getElementById('previewRoleEmail')?.value.trim(),role=document.getElementById('previewRole')?.value;if(!uid)return alert('Informe o UID do usuário Firebase.');db.ref('userRoles/'+uid).set({uid,email,role,active:true,storeId:'prburguer',createdAt:new Date().toISOString()}).then(()=>alert('Perfil de teste salvo.'));}
         function setAdminTab(tab) {
             activeAdminTab = tab;
             document.querySelectorAll('.admin-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
@@ -1770,6 +1783,7 @@
             if (tab === 'reports') renderReports();
             if (tab === 'categories') renderManagementCategories();
             if (tab === 'kitchen') { initKitchenData(); populateKitchenSelectors(); renderKitchenInventory(); renderKitchenAdvanced(); }
+            if (tab === 'permissionsPreview') { initPermissionsPreview(); renderPreviewRoles(); }
             if (tab === 'deliverers') { initDeliveryData(); renderDeliverers(); }
         }
         function orderStatus(order) { return adminStatusLabels[order.orderStatus] ? order.orderStatus : 'novo'; }
