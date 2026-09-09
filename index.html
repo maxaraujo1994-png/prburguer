@@ -811,6 +811,9 @@
     
         .ka-dashboard{color:#eee}.ka-kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0 14px}.ka-kpi{background:#181818;border:1px solid #333;border-radius:8px;padding:10px}.ka-kpi small{display:block;color:#999;font-size:.7rem}.ka-kpi strong{display:block;color:#c5a85c;font-size:1.2rem;margin-top:3px}.ka-tabs{display:flex;gap:6px;overflow:auto;border-bottom:1px solid #333;margin-bottom:12px}.ka-tab{background:#181818;color:#aaa;border:1px solid #333;border-bottom:0;padding:8px 11px;border-radius:6px 6px 0 0;white-space:nowrap;cursor:pointer;font-weight:700;font-size:.78rem}.ka-tab.active{background:#282216;color:#c5a85c;border-color:#c5a85c}.ka-view{background:#181818;border:1px solid #333;border-radius:8px;padding:11px;margin-bottom:10px}.ka-row{display:grid;grid-template-columns:1.4fr .7fr .7fr 1fr;gap:8px;padding:8px 0;border-bottom:1px solid #292929;font-size:.76rem}.ka-row:last-child{border-bottom:0}.ka-row strong{color:#fff}.ka-positive{color:#2ec4b6!important;font-weight:700}.ka-negative{color:#ff8a80!important;font-weight:700}.ka-legacy{margin-top:12px;border:1px solid #333;border-radius:8px;padding:10px}.ka-legacy summary{color:#c5a85c;cursor:pointer;font-weight:700;font-size:.82rem}.ka-note{color:#999;font-size:.76rem;line-height:1.4}.ka-filter{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px}.ka-filter input,.ka-filter select{flex:1 1 150px;background:#111;border:1px solid #333;color:#fff;border-radius:5px;padding:8px}@media(max-width:650px){.ka-kpis{grid-template-columns:repeat(2,1fr)}.ka-row{grid-template-columns:1fr 1fr}.ka-row span:last-child{grid-column:1/-1}}
 
+
+        .delivery-admin-card{background:#181818;border:1px solid #333;border-radius:8px;padding:11px;margin-bottom:10px}.delivery-admin-card h5{margin:0 0 8px;color:#c5a85c}.delivery-status{font-size:.72rem;color:#999}.delivery-driver-select{background:#111;border:1px solid #444;color:#fff;border-radius:4px;padding:5px;max-width:170px}.delivery-history-row{display:grid;grid-template-columns:1fr .8fr .8fr .8fr;gap:8px;padding:8px 0;border-bottom:1px solid #292929;font-size:.76rem}.delivery-history-row strong{color:#fff}.delivery-history-row span:last-child{color:#c5a85c}@media(max-width:650px){.delivery-history-row{grid-template-columns:1fr 1fr}.delivery-history-row span:last-child{grid-column:1/-1}}
+
 </style>
 </head>
 <body>
@@ -1249,12 +1252,13 @@
                         <button class="admin-tab" data-tab="reports" onclick="setAdminTab('reports')">📊 Relatórios</button>
                         <button class="admin-tab" data-tab="settings" onclick="setAdminTab('settings')">⚙️ Configurações</button>
                         <button class="admin-tab" data-tab="kitchen" onclick="setAdminTab('kitchen')">🍳 Cozinha</button>
+                        <button class="admin-tab" data-tab="deliverers" onclick="setAdminTab('deliverers')">🛵 Entregadores</button>
                     </div>
                     <section id="adminPanel-orders" data-admin-panel="orders">
                         <div class="admin-toolbar">
                             <input id="orderSearch" placeholder="Buscar por cliente ou número" oninput="renderAdminOrders(adminOrdersCache)">
                             <select id="orderStatusFilter" onchange="renderAdminOrders(adminOrdersCache)">
-                                <option value="todos">Todos os status</option><option value="novo">Novos</option><option value="preparo">Em preparo</option><option value="pronto">Prontos</option><option value="entregue">Entregues</option><option value="cancelado">Cancelados</option>
+                                <option value="ativos">Em andamento</option><option value="todos">Todos os pedidos</option><option value="novo">Novos</option><option value="preparo">Em preparo</option><option value="pronto">Prontos</option><option value="entregue">Entregues</option><option value="cancelado">Cancelados</option>
                             </select>
                             <button class="admin-action secondary" onclick="renderAdminOrders(adminOrdersCache)">Atualizar</button>
                         </div>
@@ -1297,6 +1301,11 @@
                     </section>
                     <section id="adminPanel-settings" data-admin-panel="settings" style="display:none;">
                         <div class="management-form"><h5>⚙️ Configurações da hamburgueria</h5><div class="management-grid"><input id="settingStoreName" placeholder="Nome da hamburgueria"><input id="settingPhone" placeholder="Telefone"><input id="settingAddress" placeholder="Endereço"><input id="settingDeliveryFee" type="number" step="0.01" placeholder="Taxa de entrega"><input id="settingWaitTime" type="number" placeholder="Tempo estimado (minutos)"></div><label style="display:flex;gap:8px;align-items:center;color:#ddd;font-size:.82rem;margin-top:10px;"><input id="settingAutoDeduct" type="checkbox"> Descontar insumos automaticamente ao iniciar o preparo</label><button class="admin-action" style="margin-top:12px;" onclick="saveStoreSettings()">Salvar configurações</button></div>
+                    </section>
+                    <section id="adminPanel-deliverers" data-admin-panel="deliverers" style="display:none;">
+                        <div class="delivery-admin-card"><h5>🛵 Cadastro de entregadores</h5><div class="management-grid"><input id="deliveryDriverName" placeholder="Nome do entregador"><input id="deliveryDriverPhone" placeholder="WhatsApp com DDD"><input id="deliveryDriverRate" type="number" min="0" step="0.01" placeholder="Valor por entrega (opcional)"><input id="deliveryDriverNote" placeholder="Observação (opcional)"></div><label style="display:flex;gap:8px;align-items:center;color:#ddd;font-size:.82rem;margin-top:9px;"><input id="deliveryDriverActive" type="checkbox" checked> Entregador ativo para receber pedidos</label><input id="deliveryDriverId" type="hidden"><div class="printer-actions" style="margin-top:9px;"><button class="admin-action" onclick="saveDeliverer()">Salvar entregador</button><button class="admin-action secondary" onclick="clearDelivererForm()">Limpar</button></div></div>
+                        <div class="delivery-admin-card"><h5>Entregadores cadastrados</h5><div id="deliverersList"><p class="ka-note">Nenhum entregador cadastrado.</p></div></div>
+                        <div class="delivery-admin-card"><h5>Histórico de entregas</h5><p class="ka-note">Entregas concluídas, agrupadas por entregador. Pedidos cancelados não entram no total.</p><div id="deliveryHistoryList"></div></div>
                     </section>
                     <section id="adminPanel-kitchen" data-admin-panel="kitchen" style="display:none;">
                         <div class="ka-dashboard">
@@ -1352,7 +1361,8 @@
             </div>
 
             <div class="form-group">
-                <label for="clientAddress">Endereço Completo de Entrega:</label>
+                <div class="form-group"><label>Como deseja receber?</label><div class="payment-options"><div class="payment-btn selected" id="fulfillmentDelivery" onclick="selectFulfillment('delivery')">🛵 Entrega</div><div class="payment-btn" id="fulfillmentPickup" onclick="selectFulfillment('pickup')">🏪 Retirada</div></div><small id="fulfillmentNote" style="color:#888;display:block;margin-top:6px;">Receba no endereço informado.</small></div>
+                <label for="clientAddress" id="clientAddressLabel">Endereço Completo de Entrega:</label>
                 <textarea id="clientAddress" rows="3" placeholder="Rua, número, bairro e pontos de referência..."></textarea>
             </div>
 
@@ -1439,6 +1449,7 @@
 
         let cart = [];
         let selectedPaymentMethod = '';
+        let selectedFulfillment = 'delivery';
         let deliveryFee = 6.00;
         let currentProductOpening = null;
         let ordersListenerAttached = false;
@@ -1456,6 +1467,8 @@
         let kitchenInitialized = false;
         let kitchenMovementsData = {};
         let kitchenAdvancedTab = 'overview';
+        let deliverersData = {};
+        let deliveryInitialized = false;
         let catalogDefaults = [];
         let managedCategories = {};
         let deletedProducts = {};
@@ -1471,6 +1484,7 @@
                     initRealtimeSync();
                     renderPrinterStatus();
                     initKitchenData();
+                    initDeliveryData();
                 }
             });
             initManagementData();
@@ -1597,7 +1611,7 @@
         function saveStoreHours(){const hours={};dayNames.forEach(([id])=>hours[id]={open:document.getElementById('hourOpen_'+id).value,close:document.getElementById('hourClose_'+id).value,closed:false});db.ref('storeSettings/hours').set(hours).then(()=>alert('Horários salvos.'));}
         function renderSettingsForm(){const st=managedSettings;[['settingStoreName',st.name||''],['settingPhone',st.phone||''],['settingAddress',st.address||''],['settingDeliveryFee',st.deliveryFee??6],['settingWaitTime',st.waitTime??40]].forEach(([id,v])=>{const el=document.getElementById(id);if(el&&document.activeElement!==el)el.value=v;});const auto=document.getElementById('settingAutoDeduct');if(auto)auto.checked=st.kitchenAutoDeduct!==false;renderHoursForm();}
         function saveStoreSettings(){const data={name:document.getElementById('settingStoreName').value.trim(),phone:document.getElementById('settingPhone').value.trim(),address:document.getElementById('settingAddress').value.trim(),deliveryFee:Number(document.getElementById('settingDeliveryFee').value||0),waitTime:Number(document.getElementById('settingWaitTime').value||40),kitchenAutoDeduct:document.getElementById('settingAutoDeduct')?.checked!==false};db.ref('storeSettings').update(data).then(()=>alert('Configurações salvas.'));}
-        function renderReports(){const start=document.getElementById('reportStartDate').value;const end=document.getElementById('reportEndDate').value;const rows=Object.values(adminOrdersCache).filter(o=>{const d=(o.timestamp||'').slice(0,10);return (!start||d>=start)&&(!end||d<=end);});const total=rows.reduce((a,o)=>a+Number(o.total||0),0);const summary=document.getElementById('reportSummary');if(summary)summary.innerText=`${rows.length} pedido(s) · Total R$ ${total.toFixed(2).replace('.',',')} · Ticket médio R$ ${(rows.length?total/rows.length:0).toFixed(2).replace('.',',')}`;const days={};rows.forEach(o=>{const d=(o.timestamp||'').slice(5,10)||'--';days[d]=(days[d]||0)+Number(o.total||0)});const vals=Object.entries(days).slice(-14);const max=Math.max(...vals.map(x=>x[1]),1);const chart=document.getElementById('reportChart');if(chart)chart.innerHTML=vals.map(([d,v])=>`<div class="report-bar-item" style="height:${Math.max(4,v/max*100)}%" title="R$ ${v.toFixed(2).replace('.',',')}"><span>${d}</span></div>`).join('');}
+        function renderReports(){const start=document.getElementById('reportStartDate').value;const end=document.getElementById('reportEndDate').value;const rows=Object.values(adminOrdersCache).filter(o=>orderStatus(o)!=='cancelado'&&(()=>{const d=(o.timestamp||'').slice(0,10);return (!start||d>=start)&&(!end||d<=end);})());const total=rows.reduce((a,o)=>a+Number(o.total||0),0);const summary=document.getElementById('reportSummary');if(summary)summary.innerText=`${rows.length} pedido(s) · Total R$ ${total.toFixed(2).replace('.',',')} · Ticket médio R$ ${(rows.length?total/rows.length:0).toFixed(2).replace('.',',')}`;const days={};rows.forEach(o=>{const d=(o.timestamp||'').slice(5,10)||'--';days[d]=(days[d]||0)+Number(o.total||0)});const vals=Object.entries(days).slice(-14);const max=Math.max(...vals.map(x=>x[1]),1);const chart=document.getElementById('reportChart');if(chart)chart.innerHTML=vals.map(([d,v])=>`<div class="report-bar-item" style="height:${Math.max(4,v/max*100)}%" title="R$ ${v.toFixed(2).replace('.',',')}"><span>${d}</span></div>`).join('');}
         function exportOrdersCsv(){const rows=[['Pedido','Data','Cliente','Telefone','Pagamento','Total','Status']].concat(Object.values(adminOrdersCache).map(o=>[o.orderId,o.timestamp,o.clientName,o.clientPhone,o.payment,o.total,o.orderStatus]));const csv=rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='relatorio-pedidos.csv';a.click();URL.revokeObjectURL(a.href);}
 
         function handleOrdersSnapshot(snapshot) {
@@ -1611,6 +1625,7 @@
             const currentYear = now.getFullYear();
 
             if (data) Object.values(data).forEach(order => {
+                if (orderStatus(order) === 'cancelado') return;
                 const orderDate = new Date(order.timestamp || order.createdAt || 0);
                 const orderDateStr = order.timestamp ? order.timestamp.split('T')[0] : '';
                 const amount = Number(order.total || 0);
@@ -1653,6 +1668,16 @@
         function escapeAdminText(value) { return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])); }
         const adminStatusLabels = { novo:'Novo', preparo:'Em preparo', pronto:'Pronto', entregue:'Entregue', cancelado:'Cancelado' };
         const adminStatusOrder = ['novo','preparo','pronto','entregue'];
+        function initDeliveryData(){if(deliveryInitialized)return;deliveryInitialized=true;db.ref('deliverers').on('value',s=>{deliverersData=s.val()||{};renderDeliverers();renderAdminOrders(adminOrdersCache);});}
+        function clearDelivererForm(){['deliveryDriverName','deliveryDriverPhone','deliveryDriverRate','deliveryDriverNote','deliveryDriverId'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});const a=document.getElementById('deliveryDriverActive');if(a)a.checked=true;}
+        function saveDeliverer(){const name=document.getElementById('deliveryDriverName')?.value.trim(),phone=document.getElementById('deliveryDriverPhone')?.value.trim();if(!name||phone.replace(/\D/g,'').length<10)return alert('Informe o nome e um WhatsApp válido com DDD.');const id=document.getElementById('deliveryDriverId')?.value||db.ref('deliverers').push().key;db.ref('deliverers/'+id).set({name,phone:phone.replace(/\D/g,''),rate:Number(document.getElementById('deliveryDriverRate')?.value||0),note:document.getElementById('deliveryDriverNote')?.value.trim()||'',active:document.getElementById('deliveryDriverActive')?.checked!==false,updatedAt:new Date().toISOString()}).then(()=>{clearDelivererForm();alert('Entregador salvo.');});}
+        function editDeliverer(id){const d=deliverersData[id];if(!d)return;document.getElementById('deliveryDriverId').value=id;document.getElementById('deliveryDriverName').value=d.name||'';document.getElementById('deliveryDriverPhone').value=d.phone||'';document.getElementById('deliveryDriverRate').value=d.rate||'';document.getElementById('deliveryDriverNote').value=d.note||'';document.getElementById('deliveryDriverActive').checked=d.active!==false;document.getElementById('deliveryDriverName').scrollIntoView({behavior:'smooth',block:'center'});}
+        function deleteDeliverer(id){if(confirm('Excluir este entregador do cadastro?'))db.ref('deliverers/'+id).remove();}
+        function assignDelivererToOrder(key,id){const data=id?{assignedDriverId:id,deliveryStatus:'aguardando',assignedAt:new Date().toISOString()}:{assignedDriverId:null,deliveryStatus:null,assignedAt:null};db.ref('orders/'+key).update(data);}
+        function driverMessage(order,driver){let t='🛵 *NOVA ENTREGA — PR BURGUER NA BRASA*\n';t+='Pedido #'+(order.orderId||'')+'\n';t+='Cliente: '+(order.clientName||'')+'\n';t+='WhatsApp do cliente: '+(order.clientPhone||'')+'\n';t+=(order.fulfillment==='pickup'?'Recebimento: RETIRADA NA LOJA\n':'Endereço: '+(order.address||'')+'\n');t+='Pagamento: '+(order.payment||'')+'\n';t+='Total para receber: R$ '+Number(order.total||0).toFixed(2).replace('.',',')+'\n';t+='Itens:\n';(order.items||[]).forEach(i=>{t+='• '+(i.qty||1)+'x '+(i.name||'')+'\n';if(i.isLancheCustom&&i.addonsDetails)(i.addonsDetails||[]).forEach(a=>t+='  + '+a.name+'\n');});t+='\nPor favor, confirme o recebimento do pedido.';return t;}
+        async function sendOrderToDeliverer(key){const snap=await db.ref('orders/'+key).once('value'),order=snap.val(),driver=order&&deliverersData[order.assignedDriverId];if(!order||!driver)return alert('Selecione um entregador primeiro.');const phone=String(driver.phone||'').replace(/\D/g,'');if(phone.length<10)return alert('O entregador não tem um WhatsApp válido.');window.open('https://api.whatsapp.com/send?phone=55'+phone+'&text='+encodeURIComponent(driverMessage(order,driver)),'_blank');await db.ref('orders/'+key).update({deliveryStatus:'enviado',driverNotifiedAt:new Date().toISOString()});}
+        function setDeliveryStatus(key,status){db.ref('orders/'+key).update({deliveryStatus:status,deliveryStatusAt:new Date().toISOString()});}
+        function renderDeliverers(){const box=document.getElementById('deliverersList');if(box){const rows=Object.entries(deliverersData);box.innerHTML=rows.length?rows.map(([id,d])=>`<div class="management-row"><div><strong>${escapeAdminText(d.name)}</strong><small>${escapeAdminText(d.phone||'')} · ${d.active===false?'Inativo':'Ativo'}${d.note?' · '+escapeAdminText(d.note):''}</small></div><button onclick="editDeliverer('${id}')">Editar</button><button style="background:#552;color:#fff" onclick="deleteDeliverer('${id}')">Excluir</button></div>`).join(''):'<p class="ka-note">Nenhum entregador cadastrado.</p>';}const hist=document.getElementById('deliveryHistoryList');if(!hist)return;const done=Object.entries(adminOrdersCache).filter(([,o])=>o&&orderStatus(o)==='entregue'&&o.assignedDriverId);const sums={};done.forEach(([key,o])=>{const id=o.assignedDriverId;sums[id]??={count:0,total:0,delivery:0,rows:[]};sums[id].count++;sums[id].total+=Number(o.total||0);sums[id].delivery+=Number(o.delivery||0);sums[id].rows.push({key,o});});hist.innerHTML=Object.entries(sums).map(([id,x])=>`<details class="delivery-admin-card"><summary><strong>${escapeAdminText(deliverersData[id]?.name||'Entregador removido')}</strong> · ${x.count} entrega(s) · R$ ${x.total.toFixed(2).replace('.',',')}</summary><div class="delivery-history-row"><span>Total de pedidos</span><span>${x.count}</span><span>Faturamento</span><span>R$ ${x.total.toFixed(2).replace('.',',')}</span></div><div class="delivery-history-row"><span>Taxas de entrega</span><span>R$ ${x.delivery.toFixed(2).replace('.',',')}</span><span>Repasse estimado</span><span>R$ ${(x.count*Number(deliverersData[id]?.rate||0)).toFixed(2).replace('.',',')}</span></div>${x.rows.sort((a,b)=>String(b.o.deliveryCompletedAt||b.o.updatedAt||'').localeCompare(String(a.o.deliveryCompletedAt||a.o.updatedAt||''))).map(({key,o})=>`<div class="delivery-history-row"><strong>Pedido #${escapeAdminText(o.orderId||key.slice(-5))}</strong><span>${o.timestamp?new Date(o.timestamp).toLocaleDateString('pt-BR'):''}</span><span>${escapeAdminText(o.clientName||'Cliente')}</span><span>R$ ${Number(o.total||0).toFixed(2).replace('.',',')}</span></div>`).join('')}</details>`).join('')||'<p class="ka-note">Nenhuma entrega concluída ainda.</p>';}
         function setAdminTab(tab) {
             activeAdminTab = tab;
             document.querySelectorAll('.admin-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
@@ -1662,6 +1687,7 @@
             if (tab === 'reports') renderReports();
             if (tab === 'categories') renderManagementCategories();
             if (tab === 'kitchen') { initKitchenData(); populateKitchenSelectors(); renderKitchenInventory(); renderKitchenAdvanced(); }
+            if (tab === 'deliverers') { initDeliveryData(); renderDeliverers(); }
         }
         function orderStatus(order) { return adminStatusLabels[order.orderStatus] ? order.orderStatus : 'novo'; }
         function renderAdminOrders(data) {
@@ -1669,14 +1695,15 @@
             const box = document.getElementById('adminOrdersList');
             if (!box) return;
             const q = (document.getElementById('orderSearch')?.value || '').toLowerCase().trim();
-            const statusFilter = document.getElementById('orderStatusFilter')?.value || 'todos';
-            const all = Object.entries(adminOrdersCache).filter(([,o]) => o && (!q || String(o.clientName||'').toLowerCase().includes(q) || String(o.orderId||'').includes(q)) && (statusFilter === 'todos' || orderStatus(o) === statusFilter)).sort((a,b) => String(b[1].timestamp||'').localeCompare(String(a[1].timestamp||'')));
-            const columns = adminStatusOrder.map(status => {
+            const statusFilter = document.getElementById('orderStatusFilter')?.value || 'ativos';
+            const all = Object.entries(adminOrdersCache).filter(([,o]) => o && (!q || String(o.clientName||'').toLowerCase().includes(q) || String(o.orderId||'').includes(q)) && (statusFilter === 'ativos' ? orderStatus(o) !== 'cancelado' : (statusFilter === 'todos' || orderStatus(o) === statusFilter))).sort((a,b) => String(b[1].timestamp||'').localeCompare(String(a[1].timestamp||'')));
+            const displayStatuses = statusFilter === 'cancelado' ? ['cancelado'] : adminStatusOrder;
+            const columns = displayStatuses.map(status => {
                 const rows = all.filter(([,o]) => orderStatus(o) === status);
                 return `<div class="order-column"><div class="order-column-title"><span>${adminStatusLabels[status]}</span><span class="order-column-count">${rows.length}</span></div>${rows.length ? rows.map(([key,o]) => renderOrderCard(key,o)).join('') : '<div style="color:#666;font-size:.75rem;text-align:center;padding:12px 3px;">Nenhum pedido</div>'}</div>`;
             }).join('');
             box.innerHTML = columns;
-            const pending = Object.values(adminOrdersCache).filter(o => o && (orderStatus(o) === 'novo' || o.printStatus === 'pending')).length;
+            const pending = Object.values(adminOrdersCache).filter(o => o && orderStatus(o) !== 'cancelado' && (orderStatus(o) === 'novo' || o.printStatus === 'pending')).length;
             const pendingEl = document.getElementById('statPending'); if (pendingEl) pendingEl.innerText = pending;
             renderTopProducts(adminOrdersCache);
         }
@@ -1684,13 +1711,13 @@
             const items = (order.items || []).map(i => `${i.qty || 1}x ${escapeAdminText(i.name)}`).join('<br>');
             const time = order.timestamp ? new Date(order.timestamp).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : '';
             const next = {novo:'preparo', preparo:'pronto', pronto:'entregue'}[orderStatus(order)];
-            return `<article class="order-card"><h5>Pedido #${escapeAdminText(order.orderId || key.slice(-5))}</h5><div class="order-muted">${escapeAdminText(order.clientName || 'Cliente')} · ${time}<br>${items || 'Sem itens'}</div><div class="order-total">R$ ${Number(order.total||0).toFixed(2).replace('.', ',')}</div><div class="order-card-actions"><button onclick="previewOrder('${key}')">Ver cupom</button>${next ? `<button class="next" onclick="updateOrderStatus('${key}','${next}')">${adminStatusLabels[next]}</button>` : ''}<button onclick="updateOrderStatus('${key}','cancelado')">Cancelar</button></div></article>`;
+            const driverOptions = '<option value="">Sem entregador</option>' + Object.entries(deliverersData||{}).filter(([id,d])=>d.active!==false || id===order.assignedDriverId).map(([id,d])=>`<option value="${id}" ${id===order.assignedDriverId?'selected':''}>${escapeAdminText(d.name)}</option>`).join(''); const driverName=order.assignedDriverId&&deliverersData[order.assignedDriverId]?deliverersData[order.assignedDriverId].name:'Sem entregador'; const receive=order.fulfillment==='pickup'?'Retirada':'Entrega'; return `<article class="order-card"><h5>Pedido #${escapeAdminText(order.orderId || key.slice(-5))}</h5><div class="order-muted">${escapeAdminText(order.clientName || 'Cliente')} · ${time}<br>${receive} · ${items || 'Sem itens'}</div><div class="order-total">R$ ${Number(order.total||0).toFixed(2).replace('.', ',')}</div><div class="delivery-status">Entregador: ${escapeAdminText(driverName)}</div><select class="delivery-driver-select" onchange="assignDelivererToOrder('${key}',this.value)">${driverOptions}</select><div class="order-card-actions"><button onclick="previewOrder('${key}')">Ver cupom</button><button onclick="printOrderAgain('${key}')">Imprimir</button>${order.assignedDriverId ? `<button onclick="sendOrderToDeliverer('${key}')">WhatsApp entregador</button>${order.deliveryStatus!=='em_rota'&&orderStatus(order)!=='entregue'?`<button onclick="setDeliveryStatus('${key}','em_rota')">Em rota</button>`:''}` : ''}${next ? `<button class="next" onclick="updateOrderStatus('${key}','${next}')">${adminStatusLabels[next]}</button>` : ''}${orderStatus(order)!=='cancelado' ? `<button onclick="updateOrderStatus('${key}','cancelado')">Cancelar</button>` : ''}</div></article>`;
         }
-        async function updateOrderStatus(key, status) { try { const snap=await db.ref('orders/'+key).once('value'); const order=snap.val(); if(!order)return; const auto=managedSettings.kitchenAutoDeduct!==false; if(status==='preparo'&&auto&&!order.stockDeducted){await moveKitchenStockForOrder(order,key,-1);await db.ref('orders/'+key).update({stockDeducted:true,stockDeductedAt:new Date().toISOString()});} if(status==='cancelado'&&order.stockDeducted&&!order.stockRestored){await moveKitchenStockForOrder(order,key,1);await db.ref('orders/'+key).update({stockRestored:true,stockRestoredAt:new Date().toISOString()});} await db.ref('orders/'+key).update({orderStatus:status,updatedAt:new Date().toISOString()}); } catch(e){alert(e.message||'Não foi possível alterar o status do pedido.');} }
+        async function updateOrderStatus(key, status) { try { const snap=await db.ref('orders/'+key).once('value'); const order=snap.val(); if(!order)return; const auto=managedSettings.kitchenAutoDeduct!==false; const now=new Date().toISOString(); if(status==='preparo'&&auto&&!order.stockDeducted){await moveKitchenStockForOrder(order,key,-1);await db.ref('orders/'+key).update({stockDeducted:true,stockDeductedAt:now});} if(status==='cancelado'&&order.stockDeducted&&!order.stockRestored){await moveKitchenStockForOrder(order,key,1);await db.ref('orders/'+key).update({stockRestored:true,stockRestoredAt:now});} const extra=status==='entregue'?{deliveryStatus:'entregue',deliveryCompletedAt:now}:{}; await db.ref('orders/'+key).update({orderStatus:status,updatedAt:now,...extra}); } catch(e){alert(e.message||'Não foi possível alterar o status do pedido.');} }
         function renderTopProducts(data) {
             const box = document.getElementById('adminTopProducts'); if (!box) return;
             const counts = {};
-            Object.values(data || {}).forEach(o => (o.items || []).forEach(i => { const n = i.isLancheCustom ? i.lancheBase : i.name; counts[n] = (counts[n] || 0) + Number(i.qty || 0); }));
+            Object.values(data || {}).filter(o=>orderStatus(o)!=='cancelado').forEach(o => (o.items || []).forEach(i => { const n = i.isLancheCustom ? i.lancheBase : i.name; counts[n] = (counts[n] || 0) + Number(i.qty || 0); }));
             const rows = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,6);
             box.innerHTML = rows.length ? rows.map(([name,n])=>`<div class="rank-row"><span>${escapeAdminText(name)}</span><span>${n} un.</span></div>`).join('') : '<span style="color:#777;font-size:.8rem;">Aguardando pedidos...</span>';
         }
@@ -1702,6 +1729,7 @@
         function showReceiptPreview(order) { const o=document.getElementById('receiptPreviewOverlay'), p=document.getElementById('receiptPreviewText'); if(!o||!p)return; p.textContent=receiptPreviewText(order); o.style.display='flex'; }
         function closeReceiptPreview() { const o=document.getElementById('receiptPreviewOverlay'); if(o)o.style.display='none'; }
         function previewOrder(key) { if(adminOrdersCache[key]) showReceiptPreview(adminOrdersCache[key]); }
+        async function printOrderAgain(key){try{const snap=await db.ref('orders/'+key).once('value');const order=snap.val();if(!order)return;await sendToThermalPrinter({...order,firebaseKey:key});renderPrinterStatus('Pedido #'+(order.orderId||'')+' impresso novamente.','ok');}catch(e){alert(e.message||'Conecte uma impressora antes de imprimir.');}}
         function previewTestReceipt() { showReceiptPreview({orderId:'TESTE',clientName:'Cliente de teste',clientPhone:'',address:'Endereco de teste',payment:'Teste',items:[{qty:1,name:'Impressao do cupom',price:0}],total:0}); }
 
         function renderPrinterStatus(message, type) {
@@ -2097,7 +2125,9 @@
                 container.innerHTML += promoHtml;
             }
 
-            let totalGeral = subtotal + deliveryFee;
+            const currentDeliveryFee = selectedFulfillment === 'pickup' ? 0 : deliveryFee;
+            let totalGeral = subtotal + currentDeliveryFee;
+            const feeText = document.getElementById('deliveryFeeText'); if (feeText) feeText.innerText = selectedFulfillment === 'pickup' ? 'R$ 0,00 (retirada)' : 'R$ ' + deliveryFee.toFixed(2).replace('.', ',');
             document.getElementById('cartFloat').style.display = 'flex';
             document.getElementById('cartCount').innerText = count + (count === 1 ? ' item' : ' itens');
             document.getElementById('cartTotalFloat').innerText = totalGeral.toFixed(2).replace('.', ',');
@@ -2106,6 +2136,8 @@
         }
 
         function toggleModal(show) { document.getElementById('cartModal').style.display = show ? 'flex' : 'none'; }
+
+        function selectFulfillment(mode){selectedFulfillment=mode;const delivery=document.getElementById('fulfillmentDelivery'),pickup=document.getElementById('fulfillmentPickup'),note=document.getElementById('fulfillmentNote'),label=document.getElementById('clientAddressLabel'),address=document.getElementById('clientAddress');delivery?.classList.toggle('selected',mode==='delivery');pickup?.classList.toggle('selected',mode==='pickup');if(mode==='pickup'){if(note)note.innerText='Retire o pedido no endereço da hamburgueria.';if(label)label.innerText='Observação para retirada (opcional):';if(address){address.required=false;address.placeholder='Ex.: retirar às 20h (opcional)';}}else{if(note)note.innerText='Receba no endereço informado.';if(label)label.innerText='Endereço completo de entrega:';if(address){address.required=true;address.placeholder='Rua, número, bairro e pontos de referência...';}}if(cart.length)renderCart();}
 
         function selectPayment(method) {
             selectedPaymentMethod = method;
@@ -2136,7 +2168,8 @@
 
             if (!name) { alert('Por favor, informe seu nome.'); return; }
             if (!phoneClient) { alert('Por favor, informe seu WhatsApp/Telefone.'); return; }
-            if (!address) { alert('Por favor, informe seu endereço completo.'); return; }
+            if (selectedFulfillment === 'delivery' && !address) { alert('Por favor, informe seu endereço completo.'); return; }
+            const finalAddress = selectedFulfillment === 'pickup' ? 'Retirada na loja' + (address ? ' — ' + address : '') : address;
             if (!selectedPaymentMethod) { alert('Por favor, selecione uma forma de pagamento.'); return; }
 
             let changeText = '';
@@ -2159,18 +2192,19 @@
                 subtotal += (item.price * item.qty);
                 if (item.category === 'Hambúrgueres') totalBurgersInCart += item.qty;
             });
-            let totalFinal = subtotal + deliveryFee;
+            let totalFinal = subtotal + (selectedFulfillment === 'pickup' ? 0 : deliveryFee);
 
             // Salva pedido no Firebase para ranqueamento em tempo real e histórico financeiro/CRM
             const orderPayload = {
                 orderId: orderNum,
                 clientName: name,
                 clientPhone: phoneClient,
-                address: address,
+                address: finalAddress,
+                fulfillment: selectedFulfillment,
                 payment: selectedPaymentMethod + changeText,
                 items: cart,
                 subtotal: subtotal,
-                delivery: deliveryFee,
+                delivery: selectedFulfillment === 'pickup' ? 0 : deliveryFee,
                 total: totalFinal,
                 timestamp: new Date().toISOString(),
                 printStatus: 'pending',
@@ -2188,7 +2222,8 @@
             message += `-------------------------------------------\n\n`;
             message += `👤 *CLIENTE:* ${name}\n`;
             message += `📱 *CONTATO:* ${phoneClient}\n`;
-            message += `📍 *ENDEREÇO:* ${address}\n\n`;
+            message += selectedFulfillment === 'pickup' ? `🏪 *RECEBIMENTO:* RETIRADA NA LOJA\n` : `📍 *ENDEREÇO:* ${finalAddress}\n`;
+            message += `\n`;
             message += `💳 *PAGAMENTO:* ${selectedPaymentMethod}${changeText}\n`;
             message += `-------------------------------------------\n`;
             message += `📝 *ITENS DO PEDIDO*:\n\n`;
