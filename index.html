@@ -709,6 +709,11 @@
 
 
 
+
+        .kitchen-panel { background:#181818; border:1px solid #333; border-radius:8px; padding:12px; margin-bottom:12px; }
+        .kitchen-panel h5 { color:#c5a85c; margin-bottom:10px; }
+        .kitchen-alert { border-left:3px solid #ffb74d; padding:8px; background:#291f12; color:#ffd180; font-size:.78rem; margin-bottom:10px; }
+
         .managed-image-preview { width:54px; height:54px; object-fit:cover; border-radius:6px; border:1px solid #444; background:#111; }
         .management-form { background:#181818; border:1px solid #333; border-radius:8px; padding:12px; margin-bottom:12px; }
         .management-form h5 { color:#c5a85c; margin-bottom:10px; }
@@ -1240,6 +1245,7 @@
                         <button class="admin-tab" data-tab="hours" onclick="setAdminTab('hours')">🕒 Horários</button>
                         <button class="admin-tab" data-tab="reports" onclick="setAdminTab('reports')">📊 Relatórios</button>
                         <button class="admin-tab" data-tab="settings" onclick="setAdminTab('settings')">⚙️ Configurações</button>
+                        <button class="admin-tab" data-tab="kitchen" onclick="setAdminTab('kitchen')">🍳 Cozinha</button>
                     </div>
                     <section id="adminPanel-orders" data-admin-panel="orders">
                         <div class="admin-toolbar">
@@ -1287,7 +1293,13 @@
                         <div class="management-form"><h5>📊 Relatórios</h5><div class="management-grid"><input id="reportStartDate" type="date"><input id="reportEndDate" type="date"></div><div class="printer-actions" style="margin-top:10px;"><button onclick="renderReports()">Gerar relatório</button><button onclick="exportOrdersCsv()">Exportar CSV</button></div></div><div class="admin-summary-box"><div id="reportSummary" style="color:#ddd;font-size:.85rem;margin-bottom:10px;">Escolha um período para gerar.</div><div id="reportChart" class="report-bar"></div></div>
                     </section>
                     <section id="adminPanel-settings" data-admin-panel="settings" style="display:none;">
-                        <div class="management-form"><h5>⚙️ Configurações da hamburgueria</h5><div class="management-grid"><input id="settingStoreName" placeholder="Nome da hamburgueria"><input id="settingPhone" placeholder="Telefone"><input id="settingAddress" placeholder="Endereço"><input id="settingDeliveryFee" type="number" step="0.01" placeholder="Taxa de entrega"><input id="settingWaitTime" type="number" placeholder="Tempo estimado (minutos)"></div><button class="admin-action" style="margin-top:12px;" onclick="saveStoreSettings()">Salvar configurações</button></div>
+                        <div class="management-form"><h5>⚙️ Configurações da hamburgueria</h5><div class="management-grid"><input id="settingStoreName" placeholder="Nome da hamburgueria"><input id="settingPhone" placeholder="Telefone"><input id="settingAddress" placeholder="Endereço"><input id="settingDeliveryFee" type="number" step="0.01" placeholder="Taxa de entrega"><input id="settingWaitTime" type="number" placeholder="Tempo estimado (minutos)"></div><label style="display:flex;gap:8px;align-items:center;color:#ddd;font-size:.82rem;margin-top:10px;"><input id="settingAutoDeduct" type="checkbox"> Descontar insumos automaticamente ao iniciar o preparo</label><button class="admin-action" style="margin-top:12px;" onclick="saveStoreSettings()">Salvar configurações</button></div>
+                    </section>
+                    <section id="adminPanel-kitchen" data-admin-panel="kitchen" style="display:none;">
+                        <div class="kitchen-alert">Configure aqui os insumos usados nas receitas. Ao mudar um pedido para “Em preparo”, o sistema pode descontar automaticamente o consumo da cozinha.</div>
+                        <div class="kitchen-panel"><h5>➕ Insumo da cozinha</h5><div class="management-grid"><input id="newKitchenName" placeholder="Ex.: Bacon"><select id="newKitchenCategory"><option>Ingredientes</option><option>Carnes</option><option>Molhos</option><option>Bebidas</option><option>Acompanhamentos</option><option>Embalagens</option></select><select id="newKitchenUnit"><option>unidade</option><option>kg</option><option>g</option><option>litro</option><option>ml</option><option>pacote</option></select><input id="newKitchenStock" type="number" min="0" step="0.01" placeholder="Estoque atual"><input id="newKitchenMin" type="number" min="0" step="0.01" placeholder="Estoque mínimo"></div><button class="admin-action" style="margin-top:9px;" onclick="createKitchenIngredient()">Adicionar insumo</button></div>
+                        <div class="addons-section-title">Estoque da cozinha</div><div id="kitchenInventoryList" class="management-list"></div>
+                        <div class="kitchen-panel"><h5>🧾 Ficha técnica dos produtos</h5><div class="management-grid"><select id="recipeProductSelect" onchange="renderKitchenRecipes()"></select><select id="recipeIngredientSelect"></select><input id="recipeQty" type="number" min="0.01" step="0.01" placeholder="Quantidade por unidade"></div><button class="admin-action" style="margin-top:9px;" onclick="addKitchenRecipe()">Adicionar à receita</button><div id="kitchenRecipeList" style="margin-top:12px;"></div></div>
                     </section>
                     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:18px;"><button onclick="clearHistory('day')" class="admin-action secondary">Limpar dia</button><button onclick="clearHistory('all')" class="admin-action secondary" style="color:#ff8a80;border-color:#733;">Limpar histórico</button></div>
                 </div>
@@ -1425,6 +1437,9 @@
         let managedOverrides = {};
         let managedInventory = {};
         let managedSettings = {};
+        let kitchenInventoryData = {};
+        let kitchenRecipes = {};
+        let kitchenInitialized = false;
         let catalogDefaults = [];
         let managedCategories = {};
         let deletedProducts = {};
@@ -1439,6 +1454,7 @@
                 if (user) {
                     initRealtimeSync();
                     renderPrinterStatus();
+                    initKitchenData();
                 }
             });
             initManagementData();
@@ -1458,6 +1474,20 @@
             db.ref('orders').off('child_added', handleNewOrderForPrinting);
             ordersListenerAttached = false;
         }
+
+        function kitchenProductKey(name){return productKey(String(name||'').replace(/^Adicional:\s*/i,''));}
+        function initKitchenData(){if(kitchenInitialized)return;kitchenInitialized=true;db.ref('kitchenInventory').on('value',s=>{kitchenInventoryData=s.val()||{};renderKitchenInventory();populateKitchenSelectors();});db.ref('recipes').on('value',s=>{kitchenRecipes=s.val()||{};populateKitchenSelectors();renderKitchenRecipes();});}
+        function createKitchenIngredient(){const name=document.getElementById('newKitchenName').value.trim();if(!name)return alert('Informe o nome do insumo.');const id=kitchenProductKey(name);db.ref('kitchenInventory/'+id).set({name,category:document.getElementById('newKitchenCategory').value,unit:document.getElementById('newKitchenUnit').value,stock:Number(document.getElementById('newKitchenStock').value||0),minStock:Number(document.getElementById('newKitchenMin').value||0),active:true}).then(()=>{document.getElementById('newKitchenName').value='';document.getElementById('newKitchenStock').value='';document.getElementById('newKitchenMin').value='';});}
+        function renderKitchenInventory(){const box=document.getElementById('kitchenInventoryList');if(!box)return;const rows=Object.entries(kitchenInventoryData);box.innerHTML=rows.length?rows.map(([id,x])=>{const low=Number(x.stock||0)<=Number(x.minStock||0);return `<div class="management-row"><div><strong>${escapeAdminText(x.name)}</strong><small>${escapeAdminText(x.category||'Ingredientes')} · ${escapeAdminText(x.unit||'unidade')} ${low?'· ESTOQUE BAIXO':''}</small></div><input id="kiStock_${id}" type="number" min="0" step="0.01" value="${Number(x.stock||0)}"><input id="kiMin_${id}" type="number" min="0" step="0.01" value="${Number(x.minStock||0)}"><button onclick="saveKitchenIngredient('${id}')">Salvar</button><button style="background:#552;color:#fff" onclick="deleteKitchenIngredient('${id}')">Excluir</button></div>`}).join(''):'<p style="color:#777;font-size:.8rem;padding:10px;">Cadastre os insumos usados na cozinha.</p>';}
+        function saveKitchenIngredient(id){db.ref('kitchenInventory/'+id).update({stock:Number(document.getElementById('kiStock_'+id).value||0),minStock:Number(document.getElementById('kiMin_'+id).value||0)});}
+        function deleteKitchenIngredient(id){if(confirm('Excluir este insumo e suas referências de receita?'))db.ref('kitchenInventory/'+id).remove();}
+        function populateSelectorsIfReady(){populateKitchenSelectors();}
+        function populateKitchenSelectors(){const ps=document.getElementById('recipeProductSelect'),is=document.getElementById('recipeIngredientSelect');if(!ps||!is)return;const products=allManagedProducts();const old=ps.value;ps.innerHTML=products.filter(p=>!p.deleted).map(p=>`<option value="${p.id}">${escapeAdminText(p.name)}</option>`).join('');if(products.some(p=>p.id===old))ps.value=old;is.innerHTML=Object.entries(kitchenInventoryData).map(([id,x])=>`<option value="${id}">${escapeAdminText(x.name)} (${escapeAdminText(x.unit||'unidade')})</option>`).join('');renderKitchenRecipes();}
+        function renderKitchenRecipes(){const ps=document.getElementById('recipeProductSelect'),box=document.getElementById('kitchenRecipeList');if(!ps||!box)return;const pid=ps.value;const recipe=kitchenRecipes[pid]||{};const rows=Object.entries(recipe);box.innerHTML=rows.length?rows.map(([iid,x])=>`<div class="rank-row"><span>${escapeAdminText(kitchenInventoryData[iid]?.name||iid)} · ${x.qty} ${escapeAdminText(kitchenInventoryData[iid]?.unit||'unidade')}</span><button onclick="removeKitchenRecipe('${pid}','${iid}')" style="background:#552;color:#fff;border:0;border-radius:4px;padding:4px 7px;">Remover</button></div>`).join(''):'<span style="color:#777;font-size:.78rem;">Nenhum insumo configurado para este produto.</span>';}
+        function addKitchenRecipe(){const pid=document.getElementById('recipeProductSelect').value,iid=document.getElementById('recipeIngredientSelect').value,qty=Number(document.getElementById('recipeQty').value||0);if(!pid||!iid||qty<=0)return alert('Escolha o produto, o insumo e uma quantidade.');db.ref('recipes/'+pid+'/'+iid).set({qty}).then(()=>{document.getElementById('recipeQty').value='';});}
+        function removeKitchenRecipe(pid,iid){db.ref('recipes/'+pid+'/'+iid).remove();}
+        function kitchenNeedsForOrder(order){const needs={};const add=(pid,mult)=>{const recipe=kitchenRecipes[kitchenProductKey(pid)]||{};Object.entries(recipe).forEach(([iid,x])=>needs[iid]=(needs[iid]||0)+Number(x.qty||0)*mult);};(order.items||[]).forEach(item=>{const mult=Number(item.qty||1);if(item.isComboCasal&&item.details){add(item.details.burger1,mult);if(item.details.burger2&&item.details.burger2!=='Nenhum')add(item.details.burger2,mult);add('Batata Frita Individual',Number(item.details.potatoes||0)*mult);add('Refrigerante em Lata',Number(item.details.sodas||0)*mult);}else if(item.isLancheCustom){add(item.lancheBase,mult);(item.addonsDetails||[]).forEach(a=>add(a.name,mult));}else add(item.name,mult);});return needs;}
+        async function moveKitchenStockForOrder(order,key,direction){const needs=kitchenNeedsForOrder(order);const current=await db.ref('kitchenInventory').once('value');const inv=current.val()||{};const updates={};for(const [iid,qty] of Object.entries(needs)){if(!inv[iid])continue;const old=Number(inv[iid].stock||0),next=old+(direction*qty);if(direction<0&&next<0)throw new Error('Estoque insuficiente: '+(inv[iid].name||iid));updates['kitchenInventory/'+iid+'/stock']=next;}if(Object.keys(updates).length)await db.ref().update(updates);return Object.keys(updates).length;}
 
         function productKey(name) { return String(name || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,70); }
         function collectCatalogDefaults() {
@@ -1541,8 +1571,8 @@
         const dayNames=[['mon','Segunda'],['tue','Terça'],['wed','Quarta'],['thu','Quinta'],['fri','Sexta'],['sat','Sábado'],['sun','Domingo']];
         function renderHoursForm(){const box=document.getElementById('managementHoursList');if(!box)return;const h=managedSettings.hours||{};box.innerHTML=dayNames.map(([id,n])=>{const x=h[id]||{open:'19:00',close:'23:00'};return `<div class="hours-row"><label>${n}</label><input id="hourOpen_${id}" type="time" value="${x.open||'19:00'}"><input id="hourClose_${id}" type="time" value="${x.close||'23:00'}"></div>`}).join('');}
         function saveStoreHours(){const hours={};dayNames.forEach(([id])=>hours[id]={open:document.getElementById('hourOpen_'+id).value,close:document.getElementById('hourClose_'+id).value,closed:false});db.ref('storeSettings/hours').set(hours).then(()=>alert('Horários salvos.'));}
-        function renderSettingsForm(){const st=managedSettings;[['settingStoreName',st.name||''],['settingPhone',st.phone||''],['settingAddress',st.address||''],['settingDeliveryFee',st.deliveryFee??6],['settingWaitTime',st.waitTime??40]].forEach(([id,v])=>{const el=document.getElementById(id);if(el&&document.activeElement!==el)el.value=v;});renderHoursForm();}
-        function saveStoreSettings(){const data={name:document.getElementById('settingStoreName').value.trim(),phone:document.getElementById('settingPhone').value.trim(),address:document.getElementById('settingAddress').value.trim(),deliveryFee:Number(document.getElementById('settingDeliveryFee').value||0),waitTime:Number(document.getElementById('settingWaitTime').value||40)};db.ref('storeSettings').update(data).then(()=>alert('Configurações salvas.'));}
+        function renderSettingsForm(){const st=managedSettings;[['settingStoreName',st.name||''],['settingPhone',st.phone||''],['settingAddress',st.address||''],['settingDeliveryFee',st.deliveryFee??6],['settingWaitTime',st.waitTime??40]].forEach(([id,v])=>{const el=document.getElementById(id);if(el&&document.activeElement!==el)el.value=v;});const auto=document.getElementById('settingAutoDeduct');if(auto)auto.checked=st.kitchenAutoDeduct!==false;renderHoursForm();}
+        function saveStoreSettings(){const data={name:document.getElementById('settingStoreName').value.trim(),phone:document.getElementById('settingPhone').value.trim(),address:document.getElementById('settingAddress').value.trim(),deliveryFee:Number(document.getElementById('settingDeliveryFee').value||0),waitTime:Number(document.getElementById('settingWaitTime').value||40),kitchenAutoDeduct:document.getElementById('settingAutoDeduct')?.checked!==false};db.ref('storeSettings').update(data).then(()=>alert('Configurações salvas.'));}
         function renderReports(){const start=document.getElementById('reportStartDate').value;const end=document.getElementById('reportEndDate').value;const rows=Object.values(adminOrdersCache).filter(o=>{const d=(o.timestamp||'').slice(0,10);return (!start||d>=start)&&(!end||d<=end);});const total=rows.reduce((a,o)=>a+Number(o.total||0),0);const summary=document.getElementById('reportSummary');if(summary)summary.innerText=`${rows.length} pedido(s) · Total R$ ${total.toFixed(2).replace('.',',')} · Ticket médio R$ ${(rows.length?total/rows.length:0).toFixed(2).replace('.',',')}`;const days={};rows.forEach(o=>{const d=(o.timestamp||'').slice(5,10)||'--';days[d]=(days[d]||0)+Number(o.total||0)});const vals=Object.entries(days).slice(-14);const max=Math.max(...vals.map(x=>x[1]),1);const chart=document.getElementById('reportChart');if(chart)chart.innerHTML=vals.map(([d,v])=>`<div class="report-bar-item" style="height:${Math.max(4,v/max*100)}%" title="R$ ${v.toFixed(2).replace('.',',')}"><span>${d}</span></div>`).join('');}
         function exportOrdersCsv(){const rows=[['Pedido','Data','Cliente','Telefone','Pagamento','Total','Status']].concat(Object.values(adminOrdersCache).map(o=>[o.orderId,o.timestamp,o.clientName,o.clientPhone,o.payment,o.total,o.orderStatus]));const csv=rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='relatorio-pedidos.csv';a.click();URL.revokeObjectURL(a.href);}
 
@@ -1607,6 +1637,7 @@
             if (tab === 'settings') renderSettingsForm();
             if (tab === 'reports') renderReports();
             if (tab === 'categories') renderManagementCategories();
+            if (tab === 'kitchen') { initKitchenData(); populateKitchenSelectors(); renderKitchenInventory(); }
         }
         function orderStatus(order) { return adminStatusLabels[order.orderStatus] ? order.orderStatus : 'novo'; }
         function renderAdminOrders(data) {
@@ -1631,7 +1662,7 @@
             const next = {novo:'preparo', preparo:'pronto', pronto:'entregue'}[orderStatus(order)];
             return `<article class="order-card"><h5>Pedido #${escapeAdminText(order.orderId || key.slice(-5))}</h5><div class="order-muted">${escapeAdminText(order.clientName || 'Cliente')} · ${time}<br>${items || 'Sem itens'}</div><div class="order-total">R$ ${Number(order.total||0).toFixed(2).replace('.', ',')}</div><div class="order-card-actions"><button onclick="previewOrder('${key}')">Ver cupom</button>${next ? `<button class="next" onclick="updateOrderStatus('${key}','${next}')">${adminStatusLabels[next]}</button>` : ''}<button onclick="updateOrderStatus('${key}','cancelado')">Cancelar</button></div></article>`;
         }
-        function updateOrderStatus(key, status) { db.ref('orders/' + key).update({ orderStatus: status, updatedAt: new Date().toISOString() }); }
+        async function updateOrderStatus(key, status) { try { const snap=await db.ref('orders/'+key).once('value'); const order=snap.val(); if(!order)return; const auto=managedSettings.kitchenAutoDeduct!==false; if(status==='preparo'&&auto&&!order.stockDeducted){await moveKitchenStockForOrder(order,key,-1);await db.ref('orders/'+key).update({stockDeducted:true,stockDeductedAt:new Date().toISOString()});} if(status==='cancelado'&&order.stockDeducted&&!order.stockRestored){await moveKitchenStockForOrder(order,key,1);await db.ref('orders/'+key).update({stockRestored:true,stockRestoredAt:new Date().toISOString()});} await db.ref('orders/'+key).update({orderStatus:status,updatedAt:new Date().toISOString()}); } catch(e){alert(e.message||'Não foi possível alterar o status do pedido.');} }
         function renderTopProducts(data) {
             const box = document.getElementById('adminTopProducts'); if (!box) return;
             const counts = {};
