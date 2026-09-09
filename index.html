@@ -1446,7 +1446,7 @@
             
             <p id="waitTimeText" style="font-size: 0.85rem; color: #bca158; margin-top: 8px; text-align: right; font-weight: 500;">⏱️ Tempo de espera estimado: 40 minutos</p>
 
-            <button class="btn-checkout" onclick="sendWhatsApp()">Confirmar e enviar pedido</button>
+            <button id="checkoutSubmitButton" class="btn-checkout" type="button" onclick="sendWhatsApp()">Confirmar e enviar pedido</button>
         </div>
     </div>
 
@@ -1535,6 +1535,7 @@
         let customerTrackingListeners = {};
         let customerTrackingOrders = {};
         let currentCustomerPortalSection = 'active';
+        let orderSending = false;
         let customerTrackingStatuses = {};
         let lastCustomerTrackingStatus = localStorage.getItem('prLastTrackingStatus') || '';
         let notificationAudioContext = null;
@@ -2319,7 +2320,8 @@
             if(!show) { document.getElementById('changeValue').value = ''; }
         }
 
-        function sendWhatsApp() {
+        async function sendWhatsApp() {
+            if(orderSending)return;
             const name = document.getElementById('clientName').value.trim();
             const phoneClient = document.getElementById('clientPhone').value.trim();
             const address = document.getElementById('clientAddress').value.trim();
@@ -2357,6 +2359,9 @@
             let totalFinal = Math.max(0,subtotal-couponDiscount) + currentDeliveryFee;
 
             // Salva pedido no Firebase para ranqueamento em tempo real e histórico financeiro/CRM
+            orderSending=true;
+            const checkoutButton=document.getElementById('checkoutSubmitButton');
+            if(checkoutButton){checkoutButton.disabled=true;checkoutButton.textContent='Registrando pedido...';}
             const orderPayload = {
                 orderId: orderNum,
                 clientName: name,
@@ -2376,11 +2381,24 @@
 
             const orderRef = db.ref('orders').push();
             orderPayload.firebaseKey = orderRef.key;
-            orderRef.set(orderPayload).catch(error => console.error('Falha ao salvar pedido:', error));
-            saveCustomerRecord(orderRef.key,orderPayload);
+            // Mantém o fluxo original: o cliente já entra no acompanhamento enquanto o Firebase confirma o pedido.
             localStorage.setItem('prLastOrderPhone', publicPhone(phoneClient));
             localStorage.setItem('prLastTrackingToken', orderRef.key);
-            syncPublicTracking(orderRef.key, orderPayload);
+            openCustomerTracking(orderRef.key);
+            try {
+                // A correção é confirmar /orders antes de criar as cópias públicas.
+                await orderRef.set(orderPayload);
+                const savedOrder=await orderRef.once('value');
+                if(!savedOrder.exists())throw new Error('O pedido não foi confirmado no Firebase.');
+            } catch(error) {
+                orderSending=false;
+                if(checkoutButton){checkoutButton.disabled=false;checkoutButton.textContent='Confirmar e enviar pedido';}
+                alert('Não foi possível registrar o pedido. Tente novamente; ele não foi enviado para evitar perda no painel.');
+                console.error('Falha ao salvar pedido:',error);
+                return;
+            }
+            // Depois da confirmação, atualiza acompanhamento, histórico e cadastro sem bloquear o WhatsApp.
+            Promise.all([saveCustomerRecord(orderRef.key,orderPayload),syncPublicTracking(orderRef.key,orderPayload)]).catch(error=>console.error('Falha nas cópias públicas do pedido:',error));
 
             // Montagem da mensagem do WhatsApp
             let message = `🧾 *CUPOM DE PEDIDO #${orderNum}* 🧾\n`;
@@ -2429,12 +2447,12 @@
             message += `-------------------------------------------\n`;
             message += `⏱️ *Tempo de espera: ${managedSettings.waitTime || 40} minutos*\n\n🕒 _Obrigado pela preferência!_`;
 
-            openCustomerTracking(orderRef.key);
             const phone = "5519920124303";
             window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`, '_blank');
             cart = [];
             toggleModal(false);
             updateCart();
+            orderSending=false;
         }
 
         // Funções do Administrador e CRM
