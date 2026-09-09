@@ -708,6 +708,25 @@
         .admin-order-meta { color:#999; font-size:.78rem; margin:4px 0 8px; }
 
 
+
+        .management-form { background:#181818; border:1px solid #333; border-radius:8px; padding:12px; margin-bottom:12px; }
+        .management-form h5 { color:#c5a85c; margin-bottom:10px; }
+        .management-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; }
+        .management-grid input,.management-grid select { width:100%; background:#111; color:#fff; border:1px solid #333; border-radius:5px; padding:9px; }
+        .management-list { max-height:410px; overflow:auto; }
+        .management-row { display:grid; grid-template-columns:1.4fr .8fr .8fr auto; gap:7px; align-items:center; background:#1a1a1a; border:1px solid #2d2d2d; border-radius:6px; padding:8px; margin-bottom:7px; }
+        .management-row strong { color:#fff; font-size:.8rem; }
+        .management-row small { color:#888; font-size:.7rem; display:block; }
+        .management-row input { width:100%; background:#111; color:#fff; border:1px solid #333; border-radius:4px; padding:7px; }
+        .management-row button { background:#c5a85c; color:#000; border:0; border-radius:4px; padding:7px 8px; font-weight:700; cursor:pointer; }
+        .hours-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:7px; align-items:center; padding:7px 0; border-bottom:1px solid #292929; }
+        .hours-row label { color:#ddd; font-size:.82rem; }
+        .hours-row input { background:#111; color:#fff; border:1px solid #333; border-radius:4px; padding:7px; }
+        .report-bar { display:flex; align-items:flex-end; gap:4px; height:150px; padding:10px 2px; border-bottom:1px solid #444; }
+        .report-bar-item { flex:1; min-width:8px; background:#c5a85c; border-radius:3px 3px 0 0; position:relative; }
+        .report-bar-item span { position:absolute; bottom:-22px; width:100%; text-align:center; color:#888; font-size:.65rem; }
+        @media(max-width:560px){.management-grid{grid-template-columns:1fr}.management-row{grid-template-columns:1fr 1fr}.management-row strong{grid-column:1/-1}.hours-row{grid-template-columns:1fr 1fr 1fr;font-size:.75rem}}
+
         /* Painel profissional */
         .admin-dashboard-shell { color:#e7e7e7; }
         .admin-dashboard-head { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:18px; }
@@ -1213,6 +1232,11 @@
                         <button class="admin-tab" data-tab="summary" onclick="setAdminTab('summary')">📈 Resumo</button>
                         <button class="admin-tab" data-tab="clients" onclick="setAdminTab('clients')">👥 Clientes</button>
                         <button class="admin-tab" data-tab="printer" onclick="setAdminTab('printer')">🖨️ Impressão</button>
+                        <button class="admin-tab" data-tab="products" onclick="setAdminTab('products')">🍔 Produtos</button>
+                        <button class="admin-tab" data-tab="stock" onclick="setAdminTab('stock')">📦 Estoque</button>
+                        <button class="admin-tab" data-tab="hours" onclick="setAdminTab('hours')">🕒 Horários</button>
+                        <button class="admin-tab" data-tab="reports" onclick="setAdminTab('reports')">📊 Relatórios</button>
+                        <button class="admin-tab" data-tab="settings" onclick="setAdminTab('settings')">⚙️ Configurações</button>
                     </div>
                     <section id="adminPanel-orders" data-admin-panel="orders">
                         <div class="admin-toolbar">
@@ -1241,6 +1265,22 @@
                             <div class="printer-actions"><button onclick="connectThermalPrinter('bluetooth')">Conectar Bluetooth</button><button onclick="connectThermalPrinter('serial')">Conectar USB/Serial</button><button onclick="connectThermalPrinter('bridge')">Conectar PC</button><button onclick="printTestReceipt()">Imprimir teste</button><button onclick="previewTestReceipt()">Ver cupom</button></div>
                             <p style="color:#777;font-size:.75rem;margin-top:8px;">Sem impressora disponível? Use “Ver cupom” para testar o formato do pedido na tela.</p>
                         </div>
+                    </section>
+                    <section id="adminPanel-products" data-admin-panel="products" style="display:none;">
+                        <div class="management-form"><h5>➕ Cadastrar produto</h5><div class="management-grid"><input id="newProductName" placeholder="Nome do produto"><input id="newProductPrice" type="number" step="0.01" placeholder="Preço"><input id="newProductCategory" placeholder="Categoria"><input id="newProductImage" placeholder="Imagem (opcional)"><input id="newProductDescription" placeholder="Descrição"></div><button class="admin-action" style="margin-top:9px;" onclick="createManagedProduct()">Adicionar produto</button></div>
+                        <div class="addons-section-title">Editar produtos existentes</div><div id="managementProductsList" class="management-list"></div>
+                    </section>
+                    <section id="adminPanel-stock" data-admin-panel="stock" style="display:none;">
+                        <div class="management-form"><h5>📦 Controle de estoque</h5><p style="color:#888;font-size:.78rem;">Deixe em branco para estoque ilimitado. Quando chegar a zero, o produto aparece como esgotado no cardápio.</p></div><div id="managementStockList" class="management-list"></div>
+                    </section>
+                    <section id="adminPanel-hours" data-admin-panel="hours" style="display:none;">
+                        <div class="management-form"><h5>🕒 Horário de funcionamento</h5><div id="managementHoursList"></div><button class="admin-action" style="margin-top:12px;" onclick="saveStoreHours()">Salvar horários</button></div>
+                    </section>
+                    <section id="adminPanel-reports" data-admin-panel="reports" style="display:none;">
+                        <div class="management-form"><h5>📊 Relatórios</h5><div class="management-grid"><input id="reportStartDate" type="date"><input id="reportEndDate" type="date"></div><div class="printer-actions" style="margin-top:10px;"><button onclick="renderReports()">Gerar relatório</button><button onclick="exportOrdersCsv()">Exportar CSV</button></div></div><div class="admin-summary-box"><div id="reportSummary" style="color:#ddd;font-size:.85rem;margin-bottom:10px;">Escolha um período para gerar.</div><div id="reportChart" class="report-bar"></div></div>
+                    </section>
+                    <section id="adminPanel-settings" data-admin-panel="settings" style="display:none;">
+                        <div class="management-form"><h5>⚙️ Configurações da hamburgueria</h5><div class="management-grid"><input id="settingStoreName" placeholder="Nome da hamburgueria"><input id="settingPhone" placeholder="Telefone"><input id="settingAddress" placeholder="Endereço"><input id="settingDeliveryFee" type="number" step="0.01" placeholder="Taxa de entrega"><input id="settingWaitTime" type="number" placeholder="Tempo estimado (minutos)"></div><button class="admin-action" style="margin-top:12px;" onclick="saveStoreSettings()">Salvar configurações</button></div>
                     </section>
                     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:18px;"><button onclick="clearHistory('day')" class="admin-action secondary">Limpar dia</button><button onclick="clearHistory('all')" class="admin-action secondary" style="color:#ff8a80;border-color:#733;">Limpar histórico</button></div>
                 </div>
@@ -1310,7 +1350,7 @@
             
             <div class="cart-summary-line">
                 <span>Taxa de entrega:</span>
-                <span>R$ 6,00</span>
+                <span id="deliveryFeeText">R$ 6,00</span>
             </div>
 
             <div class="cart-total-section">
@@ -1318,7 +1358,7 @@
                 <span>R$ <span id="modalTotal">0,00</span></span>
             </div>
             
-            <p style="font-size: 0.85rem; color: #bca158; margin-top: 8px; text-align: right; font-weight: 500;">⏱️ Tempo de espera estimado: 40 minutos</p>
+            <p id="waitTimeText" style="font-size: 0.85rem; color: #bca158; margin-top: 8px; text-align: right; font-weight: 500;">⏱️ Tempo de espera estimado: 40 minutos</p>
 
             <button class="btn-checkout" onclick="sendWhatsApp()">Confirmar e enviar pedido</button>
         </div>
@@ -1366,7 +1406,7 @@
 
         let cart = [];
         let selectedPaymentMethod = '';
-        const deliveryFee = 6.00;
+        let deliveryFee = 6.00;
         let currentProductOpening = null;
         let ordersListenerAttached = false;
         let printerConnection = null;
@@ -1374,6 +1414,11 @@
         let printerMode = localStorage.getItem('prPrinterMode') || '';
         let adminOrdersCache = {};
         let activeAdminTab = 'orders';
+        let managedProducts = {};
+        let managedOverrides = {};
+        let managedInventory = {};
+        let managedSettings = {};
+        let catalogDefaults = [];
         const isFriday = new Date().getDay() === 5;
 
         window.addEventListener('DOMContentLoaded', () => {
@@ -1387,6 +1432,7 @@
                     renderPrinterStatus();
                 }
             });
+            initManagementData();
         });
 
         // Sincronização em tempo real: só é ativada depois do login administrativo.
@@ -1403,6 +1449,39 @@
             db.ref('orders').off('child_added', handleNewOrderForPrinting);
             ordersListenerAttached = false;
         }
+
+        function productKey(name) { return String(name || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,70); }
+        function collectCatalogDefaults() {
+            const result=[]; document.querySelectorAll('.product-card').forEach(card => { const n=card.querySelector('.product-name')?.innerText.trim(); if(!n)return; const d=card.querySelector('.product-desc')?.innerText.trim()||''; const p=(card.querySelector('.product-price')?.innerText||'').replace(/[^0-9,]/g,'').replace(',','.'); const section=card.closest('.category-section'); const cat=section?.id||'hamburgueres'; const id=productKey(n); card.dataset.productId=id; result.push({id,name:n,description:d,price:Number(p)||0,category:cat,image:card.querySelector('img')?.src||''}); }); return result.filter((v,i,a)=>a.findIndex(x=>x.id===v.id)===i); }
+        function initManagementData() {
+            catalogDefaults=collectCatalogDefaults();
+            db.ref('storeSettings').on('value', s=>{ managedSettings=s.val()||{}; applyPublicSettings(); renderSettingsForm(); });
+            db.ref('menuOverrides').on('value', s=>{ managedOverrides=s.val()||{}; applyManagedCatalog(); renderManagementProducts(); });
+            db.ref('menuProducts').on('value', s=>{ managedProducts=s.val()||{}; applyManagedCatalog(); renderManagementProducts(); });
+            db.ref('inventory').on('value', s=>{ managedInventory=s.val()||{}; applyManagedCatalog(); renderManagementStock(); });
+        }
+        function allManagedProducts() { const list=catalogDefaults.map(x=>({...x,...(managedOverrides[x.id]||{})})); Object.entries(managedProducts).forEach(([id,x])=>{if(!list.some(p=>p.id===id))list.push({id,...x});}); return list; }
+        function applyManagedCatalog() {
+            const products=allManagedProducts();
+            document.querySelectorAll('.product-card').forEach(card=>{const id=card.dataset.productId;const p=products.find(x=>x.id===id);if(!p)return;const stock=managedInventory[id]?.stock;const available=p.available!==false && !(stock===0); card.querySelector('.product-name').innerText=p.name; if(card.querySelector('.product-desc'))card.querySelector('.product-desc').innerText=p.description||''; if(card.querySelector('.product-price'))card.querySelector('.product-price').innerText=p.price?'R$ '+Number(p.price).toFixed(2).replace('.',','):'Consultar'; if(p.image&&card.querySelector('img'))card.querySelector('img').src=p.image; card.classList.toggle('unavailable',!available); let badge=card.querySelector('.unavailable-badge'); if(!available){if(!badge){badge=document.createElement('span');badge.className='unavailable-badge';card.prepend(badge);}badge.innerText='Esgotado';}else if(badge)badge.remove(); card.onclick=available?()=>openProductDetails(p.name,p.description,Number(p.price||0),p.category,p.image):null;});
+            products.filter(p=>!document.querySelector(`.product-card[data-product-id="${p.id}"]`) && managedProducts[p.id]).forEach(p=>{const section=document.getElementById(p.category)||document.getElementById('hamburgueres');const grid=section?.querySelector('.menu-grid');if(!grid)return;const card=document.createElement('div');card.className='product-card';card.dataset.productId=p.id;card.innerHTML=`<div class="product-info-left"><div class="product-name"></div><div class="product-desc"></div><div class="product-price"></div></div><div class="product-image-right"><img alt=""></div>`;grid.appendChild(card);applyManagedCatalog();});
+            applyStoreAvailability();
+        }
+        function applyPublicSettings(){ const st=managedSettings; const name=document.querySelector('.merchant-name');const detail=document.querySelector('.merchant-details'); if(name&&st.name)name.innerText=st.name; if(detail&&st.phone){const ps=detail.querySelectorAll('p'); if(ps[1])ps[1].innerText=st.phone;} if(detail&&st.address){const ps=detail.querySelectorAll('p'); if(ps[0])ps[0].innerText=st.address;} if(st.deliveryFee!=null){deliveryFee=Number(st.deliveryFee);const fee=document.getElementById('deliveryFeeText');if(fee)fee.innerText='R$ '+deliveryFee.toFixed(2).replace('.',',');} if(st.waitTime!=null){const wt=document.getElementById('waitTimeText');if(wt)wt.innerText='⏱️ Tempo de espera estimado: '+st.waitTime+' minutos';} applyStoreAvailability(); }
+        function applyStoreAvailability(){ const status=document.getElementById('storeStatus'); if(!status)return; const open=isStoreOpenNow(); status.innerText=open?'Aberto agora — faça seu pedido':'Fechado no momento'; status.classList.toggle('open',open); }
+        function isStoreOpenNow(){ const h=managedSettings.hours; if(!h)return true; const d=['sun','mon','tue','wed','thu','fri','sat'][new Date().getDay()]; const x=h[d]; if(!x||x.closed)return false; const now=new Date(); const cur=now.getHours()*60+now.getMinutes(); const [a,b]=[x.open,x.close].map(v=>{const q=String(v||'00:00').split(':');return Number(q[0])*60+Number(q[1]);}); return cur>=a&&cur<=b; }
+        function renderManagementProducts(){ const box=document.getElementById('managementProductsList');if(!box)return; box.innerHTML=allManagedProducts().map(p=>`<div class="management-row"><div><strong>${escapeAdminText(p.name)}</strong><small>${escapeAdminText(p.category)}</small></div><input id="prodPrice_${p.id}" type="number" step="0.01" value="${Number(p.price||0).toFixed(2)}"><select id="prodAvail_${p.id}"><option value="true" ${p.available!==false?'selected':''}>Ativo</option><option value="false" ${p.available===false?'selected':''}>Oculto</option></select><button onclick="saveManagedProduct('${p.id}')">Salvar</button></div>`).join(''); }
+        function saveManagedProduct(id){ const base=allManagedProducts().find(p=>p.id===id)||{}; db.ref('menuOverrides/'+id).update({name:base.name,description:base.description,category:base.category,image:base.image,price:Number(document.getElementById('prodPrice_'+id).value||0),available:document.getElementById('prodAvail_'+id).value==='true'}).then(()=>alert('Produto atualizado.')); }
+        function createManagedProduct(){const name=document.getElementById('newProductName').value.trim();if(!name){alert('Informe o nome do produto.');return;}const id=productKey(name);db.ref('menuProducts/'+id).set({name,price:Number(document.getElementById('newProductPrice').value||0),category:document.getElementById('newProductCategory').value.trim()||'hamburgueres',description:document.getElementById('newProductDescription').value.trim(),image:document.getElementById('newProductImage').value.trim(),available:true}).then(()=>{alert('Produto adicionado.');document.getElementById('newProductName').value='';});}
+        function renderManagementStock(){const box=document.getElementById('managementStockList');if(!box)return;box.innerHTML=allManagedProducts().map(p=>`<div class="management-row"><div><strong>${escapeAdminText(p.name)}</strong><small>${managedInventory[p.id]?.stock==null?'Ilimitado':'Estoque atual: '+managedInventory[p.id].stock}</small></div><input id="stock_${p.id}" type="number" min="0" placeholder="Ilimitado" value="${managedInventory[p.id]?.stock??''}"><span style="color:#888;font-size:.72rem;">unidades</span><button onclick="saveManagedStock('${p.id}')">Salvar</button></div>`).join('');}
+        function saveManagedStock(id){const v=document.getElementById('stock_'+id).value;if(v==='')db.ref('inventory/'+id).remove();else db.ref('inventory/'+id).set({stock:Number(v),updatedAt:new Date().toISOString()});}
+        const dayNames=[['mon','Segunda'],['tue','Terça'],['wed','Quarta'],['thu','Quinta'],['fri','Sexta'],['sat','Sábado'],['sun','Domingo']];
+        function renderHoursForm(){const box=document.getElementById('managementHoursList');if(!box)return;const h=managedSettings.hours||{};box.innerHTML=dayNames.map(([id,n])=>{const x=h[id]||{open:'19:00',close:'23:00'};return `<div class="hours-row"><label>${n}</label><input id="hourOpen_${id}" type="time" value="${x.open||'19:00'}"><input id="hourClose_${id}" type="time" value="${x.close||'23:00'}"></div>`}).join('');}
+        function saveStoreHours(){const hours={};dayNames.forEach(([id])=>hours[id]={open:document.getElementById('hourOpen_'+id).value,close:document.getElementById('hourClose_'+id).value,closed:false});db.ref('storeSettings/hours').set(hours).then(()=>alert('Horários salvos.'));}
+        function renderSettingsForm(){const st=managedSettings;[['settingStoreName',st.name||''],['settingPhone',st.phone||''],['settingAddress',st.address||''],['settingDeliveryFee',st.deliveryFee??6],['settingWaitTime',st.waitTime??40]].forEach(([id,v])=>{const el=document.getElementById(id);if(el&&document.activeElement!==el)el.value=v;});renderHoursForm();}
+        function saveStoreSettings(){const data={name:document.getElementById('settingStoreName').value.trim(),phone:document.getElementById('settingPhone').value.trim(),address:document.getElementById('settingAddress').value.trim(),deliveryFee:Number(document.getElementById('settingDeliveryFee').value||0),waitTime:Number(document.getElementById('settingWaitTime').value||40)};db.ref('storeSettings').update(data).then(()=>alert('Configurações salvas.'));}
+        function renderReports(){const start=document.getElementById('reportStartDate').value;const end=document.getElementById('reportEndDate').value;const rows=Object.values(adminOrdersCache).filter(o=>{const d=(o.timestamp||'').slice(0,10);return (!start||d>=start)&&(!end||d<=end);});const total=rows.reduce((a,o)=>a+Number(o.total||0),0);const summary=document.getElementById('reportSummary');if(summary)summary.innerText=`${rows.length} pedido(s) · Total R$ ${total.toFixed(2).replace('.',',')} · Ticket médio R$ ${(rows.length?total/rows.length:0).toFixed(2).replace('.',',')}`;const days={};rows.forEach(o=>{const d=(o.timestamp||'').slice(5,10)||'--';days[d]=(days[d]||0)+Number(o.total||0)});const vals=Object.entries(days).slice(-14);const max=Math.max(...vals.map(x=>x[1]),1);const chart=document.getElementById('reportChart');if(chart)chart.innerHTML=vals.map(([d,v])=>`<div class="report-bar-item" style="height:${Math.max(4,v/max*100)}%" title="R$ ${v.toFixed(2).replace('.',',')}"><span>${d}</span></div>`).join('');}
+        function exportOrdersCsv(){const rows=[['Pedido','Data','Cliente','Telefone','Pagamento','Total','Status']].concat(Object.values(adminOrdersCache).map(o=>[o.orderId,o.timestamp,o.clientName,o.clientPhone,o.payment,o.total,o.orderStatus]));const csv=rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='relatorio-pedidos.csv';a.click();URL.revokeObjectURL(a.href);}
 
         function handleOrdersSnapshot(snapshot) {
             const data = snapshot.val();
@@ -1461,6 +1540,9 @@
             activeAdminTab = tab;
             document.querySelectorAll('.admin-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
             document.querySelectorAll('[data-admin-panel]').forEach(p => p.style.display = p.dataset.adminPanel === tab ? 'block' : 'none');
+            if (tab === 'hours') renderHoursForm();
+            if (tab === 'settings') renderSettingsForm();
+            if (tab === 'reports') renderReports();
         }
         function orderStatus(order) { return adminStatusLabels[order.orderStatus] ? order.orderStatus : 'novo'; }
         function renderAdminOrders(data) {
@@ -2023,7 +2105,7 @@
             message += `🚚 *TAXA DE ENTREGA:* R$ ${deliveryFee.toFixed(2).replace('.', ',')}\n`;
             message += `⭐ *TOTAL GERAL:* R$ ${totalFinal.toFixed(2).replace('.', ',')}\n`;
             message += `-------------------------------------------\n`;
-            message += `⏱️ *Tempo de espera: 40 minutos*\n\n🕒 _Obrigado pela preferência!_`;
+            message += `⏱️ *Tempo de espera: ${managedSettings.waitTime || 40} minutos*\n\n🕒 _Obrigado pela preferência!_`;
 
             const phone = "5519920124303";
             window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`, '_blank');
