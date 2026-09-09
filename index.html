@@ -8,7 +8,6 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-storage-compat.js"></script>
     <style>
         * {
             box-sizing: border-box;
@@ -1387,7 +1386,6 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const auth = firebase.auth();
-        const storage = firebase.storage();
 
         const availableBurgers = [
             { name: "PR Brutal", price: 56.90 },
@@ -1497,7 +1495,25 @@
         function isStoreOpenNow(){ const h=managedSettings.hours; if(!h)return true; const d=['sun','mon','tue','wed','thu','fri','sat'][new Date().getDay()]; const x=h[d]; if(!x||x.closed)return false; const now=new Date(); const cur=now.getHours()*60+now.getMinutes(); const [a,b]=[x.open,x.close].map(v=>{const q=String(v||'00:00').split(':');return Number(q[0])*60+Number(q[1]);}); return cur>=a&&cur<=b; }
         function renderManagementProducts(){ const box=document.getElementById('managementProductsList');if(!box)return; populateCategorySelect(); box.innerHTML=allManagedProducts().map(p=>`<div class="management-row"><div><strong>${escapeAdminText(p.name)}</strong><small>${escapeAdminText(categoryLabel(p.category))}</small></div><input id="prodPrice_${p.id}" type="number" step="0.01" value="${Number(p.price||0).toFixed(2)}"><select id="prodCategory_${p.id}">${allManagedCategories().filter(c=>!c.deleted).map(c=>`<option value="${c.id}" ${c.id===p.category?'selected':''}>${escapeAdminText(c.name)}</option>`).join('')}</select><select id="prodAvail_${p.id}"><option value="true" ${p.available!==false && !p.deleted?'selected':''}>Ativo</option><option value="false" ${p.available===false || p.deleted?'selected':''}>Oculto</option></select><input id="prodImage_${p.id}" type="file" accept="image/*"><button onclick="saveManagedProduct('${p.id}')">Salvar</button><button onclick="uploadManagedProductImage('${p.id}')">Foto</button><button style="background:#552;color:#fff" onclick="deleteManagedProduct('${p.id}')">Excluir</button></div>`).join(''); }
         async function saveManagedProduct(id){ const base=allManagedProducts().find(p=>p.id===id)||{}; const imageInput=document.getElementById('prodImage_'+id); let image=base.image||''; if(imageInput?.files?.[0]) image=await uploadImageFile(id,imageInput.files[0]); await db.ref('menuOverrides/'+id).update({name:base.name,description:base.description,category:document.getElementById('prodCategory_'+id).value,image,price:Number(document.getElementById('prodPrice_'+id).value||0),available:document.getElementById('prodAvail_'+id).value==='true',deleted:false}); alert('Produto atualizado.'); }
-        async function uploadImageFile(id,file){ if(!file||!file.type.startsWith('image/'))throw new Error('Escolha uma imagem.'); if(file.size>5*1024*1024)throw new Error('A imagem deve ter no máximo 5 MB.'); const ref=storage.ref('menu-images/'+id+'-'+Date.now()); await ref.put(file); return await ref.getDownloadURL(); }
+        async function uploadImageFile(id,file){
+            if(!file||!file.type.startsWith('image/')) throw new Error('Escolha uma imagem.');
+            if(file.size>10*1024*1024) throw new Error('A imagem original deve ter no máximo 10 MB.');
+            return await new Promise((resolve,reject)=>{
+                const reader=new FileReader();
+                reader.onerror=()=>reject(new Error('Não foi possível ler a imagem.'));
+                reader.onload=()=>{
+                    const img=new Image();
+                    img.onerror=()=>reject(new Error('Formato de imagem não suportado.'));
+                    img.onload=()=>{
+                        const max=800, scale=Math.min(1,max/Math.max(img.width,img.height));
+                        const canvas=document.createElement('canvas'); canvas.width=Math.max(1,Math.round(img.width*scale)); canvas.height=Math.max(1,Math.round(img.height*scale));
+                        const ctx=canvas.getContext('2d'); ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.drawImage(img,0,0,canvas.width,canvas.height);
+                        const dataUrl=canvas.toDataURL('image/jpeg',0.76);
+                        if(dataUrl.length>900000) reject(new Error('Essa imagem ainda ficou grande. Escolha uma foto menor.')); else resolve(dataUrl);
+                    }; img.src=reader.result;
+                }; reader.readAsDataURL(file);
+            });
+        }
         async function uploadManagedProductImage(id){try{const input=document.getElementById('prodImage_'+id);if(!input?.files?.[0])return alert('Escolha uma foto antes.');const url=await uploadImageFile(id,input.files[0]);await db.ref('menuOverrides/'+id).update({image:url,deleted:false});alert('Foto atualizada.');}catch(e){alert(e.message||'Não foi possível enviar a foto.');}}
         async function createManagedProduct(){try{const name=document.getElementById('newProductName').value.trim();if(!name){alert('Informe o nome do produto.');return;}const id=productKey(name);const file=document.getElementById('newProductImage').files[0];const data={name,price:Number(document.getElementById('newProductPrice').value||0),category:document.getElementById('newProductCategory').value,description:document.getElementById('newProductDescription').value.trim(),available:true};if(file)data.image=await uploadImageFile(id,file);await db.ref('menuProducts/'+id).set(data);alert('Produto adicionado.');['newProductName','newProductPrice','newProductDescription','newProductImage'].forEach(x=>{const e=document.getElementById(x);if(e)e.value='';});}catch(e){alert(e.message||'Não foi possível cadastrar o produto.');}}
         function deleteManagedProduct(id){if(!confirm('Excluir este produto do cardápio?'))return;db.ref('deletedProducts/'+id).set(true);db.ref('menuOverrides/'+id+'/deleted').set(true);db.ref('menuProducts/'+id).remove();}
