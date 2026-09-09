@@ -829,6 +829,7 @@
         .preview-role{display:inline-block;border:1px solid #c5a85c;color:#c5a85c;border-radius:12px;padding:3px 8px;font-size:.68rem}.preview-warning{background:#4a3417;border:1px solid #a7782e;color:#ffe0a0;padding:9px;border-radius:7px;font-size:.76rem;margin-bottom:10px}
         .menu-search{max-width:900px;margin:12px auto;padding:0 12px;display:flex;gap:7px}.menu-search input{flex:1;background:#151515;color:#fff;border:1px solid #444;border-radius:7px;padding:11px}.menu-search button{background:#292929;color:#ddd;border:1px solid #555;border-radius:7px;padding:0 12px}.menu-search-empty{display:none;color:#999;text-align:center;padding:20px;font-size:.85rem}
 
+        .customer-registry{background:#181818;border:1px solid #333;border-radius:8px;padding:11px;margin-top:10px}.customer-registry-row{display:grid;grid-template-columns:1.2fr 1fr .8fr .8fr auto;gap:8px;align-items:center;padding:9px 0;border-bottom:1px solid #292929;font-size:.76rem}.customer-registry-row strong{color:#fff}.customer-new{color:#2ec4b6;font-weight:800}.customer-old{color:#c5a85c;font-weight:800}.customer-registry-row button{background:#c5a85c;border:0;border-radius:4px;padding:6px 8px;font-weight:700}@media(max-width:650px){.customer-registry-row{grid-template-columns:1fr 1fr}.customer-registry-row button{grid-column:1/-1}}
 </style>
 </head>
 <body>
@@ -1274,6 +1275,7 @@
                         <button class="admin-tab" data-tab="deliverers" onclick="setAdminTab('deliverers')">🛵 Entregadores</button>
                         <button class="admin-tab" data-tab="delivery" onclick="setAdminTab('delivery')">🚚 Entrega</button>
                         <button class="admin-tab" data-tab="permissionsPreview" onclick="setAdminTab('permissionsPreview')">🔐 Permissões</button>
+                        <button class="admin-tab" data-tab="coupons" onclick="setAdminTab('coupons')">🎟️ Cupons</button>
                     </div>
                     <section id="adminPanel-orders" data-admin-panel="orders">
                         <div class="admin-toolbar">
@@ -1293,7 +1295,7 @@
                     </section>
                     <section id="adminPanel-clients" data-admin-panel="clients" style="display:none;">
                         <div class="addons-section-title">👥 Clientes e WhatsApp</div>
-                        <div id="adminClientsList" style="max-height:360px;overflow-y:auto;"><p style="color:#777;font-size:.85rem;text-align:center;padding:10px;">Nenhum cliente registrado ainda.</p></div>
+                        <div id="adminClientsList" style="max-height:360px;overflow-y:auto;"><p style="color:#777;font-size:.85rem;text-align:center;padding:10px;">Nenhum cliente registrado ainda.</p></div><div class="customer-registry"><h5>📒 Cadastro automático de clientes</h5><p class="ka-note">O cliente não precisa criar conta. O sistema reconhece o WhatsApp usado no pedido.</p><div id="customerRegistrySummary" class="admin-system-status"></div><div id="registeredCustomersList"><p class="ka-note">Aguardando clientes...</p></div><div id="customerDetail" style="margin-top:10px;"></div></div>
                     </section>
                     <section id="adminPanel-printer" data-admin-panel="printer" style="display:none;">
                         <div class="printer-panel" style="margin-top:0;">
@@ -1332,6 +1334,7 @@
                         <div class="delivery-admin-card"><h5>🚚 Cadastro da forma de entrega</h5><p class="ka-note">A alteração é salva no Firebase e aparece no carrinho em tempo real para os clientes.</p><div class="management-grid"><select id="deliveryModeAdmin" onchange="renderDeliverySettings()"><option value="fixed">Entrega com preço fixo</option><option value="free">Entrega grátis</option><option value="zones">Entrega por bairro ou região</option></select><input id="deliveryFixedFee" type="number" min="0" step="0.01" placeholder="Valor fixo da entrega"></div><button class="admin-action" style="margin-top:9px;" onclick="saveDeliverySettings()">Salvar forma de entrega</button><div id="deliveryFreePreview" class="ka-note" style="margin-top:9px;"></div></div>
                         <div class="delivery-admin-card"><h5>📍 Bairros e setores</h5><p class="ka-note">Cadastre quantos bairros quiser. O cliente selecionará o bairro no carrinho e a taxa será aplicada automaticamente.</p><div class="management-grid"><input id="deliveryZoneName" placeholder="Ex.: Santa Bárbara"><input id="deliveryZoneFee" type="number" min="0" step="0.01" placeholder="Taxa do bairro"><input id="deliveryZoneId" type="hidden"></div><div class="printer-actions" style="margin-top:9px;"><button class="admin-action" onclick="saveDeliveryZone()">Salvar bairro</button><button class="admin-action secondary" onclick="clearDeliveryZoneForm()">Limpar</button></div><div id="deliveryZonesAdminList" style="margin-top:10px;"></div></div>
                     </section>
+                    <section id="adminPanel-coupons" data-admin-panel="coupons" style="display:none;"><div class="delivery-admin-card"><h5>🎟️ Cupons e descontos</h5><p class="ka-note">Crie cupons por porcentagem ou valor fixo. O desconto aparece no carrinho antes do cliente enviar o pedido.</p><div class="management-grid"><input id="couponCodeAdmin" placeholder="Código (ex.: PR10)"><select id="couponTypeAdmin"><option value="percent">Porcentagem</option><option value="fixed">Valor fixo</option></select><input id="couponValueAdmin" type="number" min="0" step="0.01" placeholder="Desconto"><input id="couponMinAdmin" type="number" min="0" step="0.01" placeholder="Pedido mínimo"><input id="couponIdAdmin" type="hidden"></div><label style="display:flex;gap:8px;align-items:center;color:#ddd;font-size:.82rem;margin-top:8px;"><input id="couponActiveAdmin" type="checkbox" checked> Cupom ativo</label><div class="printer-actions" style="margin-top:9px;"><button class="admin-action" onclick="saveCoupon()">Salvar cupom</button><button class="admin-action secondary" onclick="clearCouponForm()">Limpar</button></div></div><div class="delivery-admin-card"><h5>Cupons cadastrados</h5><div id="couponsList"><p class="ka-note">Nenhum cupom cadastrado.</p></div></div></section>
                     <section id="adminPanel-permissionsPreview" data-admin-panel="permissionsPreview" style="display:none;">
                         <div class="delivery-admin-card"><h5>🔐 Permissões — modo de teste</h5><div class="preview-warning">Esta tela é uma prévia segura. Nesta etapa nenhum acesso atual será bloqueado. Depois de validar os perfis, as regras de segurança serão aplicadas separadamente.</div><div id="previewCurrentRole" class="admin-system-status">Carregando...</div><button class="admin-action" style="margin-bottom:9px;" onclick="claimPreviewOwner()">Validar minha conta como proprietário</button><div class="management-grid"><input id="previewRoleUid" placeholder="UID do usuário Firebase"><input id="previewRoleEmail" placeholder="E-mail para identificação"><select id="previewRole"><option value="manager">Gerente</option><option value="kitchen">Cozinha</option><option value="delivery">Entregador</option><option value="viewer">Somente leitura</option><option value="owner">Proprietário</option></select></div><button class="admin-action" style="margin-top:9px;" onclick="savePreviewRole()">Salvar perfil de teste</button></div><div class="delivery-admin-card"><h5>Perfis cadastrados</h5><div id="previewRolesList"><p class="ka-note">Nenhum perfil cadastrado.</p></div></div>
                     </section>
@@ -1408,6 +1411,8 @@
                 </div>
             </div>
 
+            <div class="form-group"><label for="couponInput">Cupom de desconto</label><div style="display:flex;gap:7px;"><input id="couponInput" placeholder="Digite seu cupom" style="flex:1;text-transform:uppercase;"><button type="button" class="admin-action" onclick="applyCouponCode()">Aplicar</button></div><small id="couponMessage" style="color:#888;display:block;margin-top:5px;"></small></div>
+
             <div class="change-container" id="changeSection" style="display: none;">
                 <label style="font-size: 0.85rem; color: #aaaaaa; font-weight: 600; display: block; margin-bottom: 6px;">Precisa de Troco?</label>
                 <div class="change-options">
@@ -1424,6 +1429,8 @@
                 <span>R$ <span id="modalSubtotal">0,00</span></span>
             </div>
             
+            <div id="couponDiscountLine" class="cart-summary-line" style="color:#2ec4b6;"></div>
+
             <div class="cart-summary-line">
                 <span>Taxa de entrega:</span>
                 <span id="deliveryFeeText">R$ 6,00</span>
@@ -1488,6 +1495,11 @@
         let deliveryFixedFee = 6.00;
         let deliveryZonesData = {};
         let deliveryFee = 6.00;
+        let couponsData = {};
+        let appliedCouponCode = '';
+        let appliedCouponData = null;
+        let customersData = {};
+        let customersInitialized = false;
         let currentProductOpening = null;
         let ordersListenerAttached = false;
         let printerConnection = null;
@@ -1542,6 +1554,7 @@
                     initDeliveryData();
                     initCustomerConfirmationListener();
                     initDriverActionListener();
+                    initCustomerRegistry();
                 }
             });
             initManagementData();
@@ -1628,7 +1641,7 @@
         function isPickupSelected(){return selectedFulfillment==='pickup'||document.getElementById('fulfillmentPickup')?.classList.contains('selected');}
         function getCurrentDeliveryFee(){if(isPickupSelected())return 0;if(String(selectedFulfillment)!=='delivery')return 0;if(deliveryMode==='free')return 0;if(deliveryMode==='zones')return Number(deliveryZonesData[selectedDeliveryZone]?.fee||0);return Number(deliveryFixedFee||deliveryFee||0);}
         function updateFreeDeliveryBanner(){const b=document.getElementById('freeDeliveryBanner');if(!b)return;b.style.display=deliveryMode==='free'?'block':'none';}
-        function applyPublicSettings(){const st=managedSettings||{};const name=document.querySelector('.merchant-name');const detail=document.querySelector('.merchant-details');if(name&&st.name)name.innerText=st.name;if(detail&&st.phone){const ps=detail.querySelectorAll('p');if(ps[1])ps[1].innerText=st.phone;}if(detail&&st.address){const ps=detail.querySelectorAll('p');if(ps[0])ps[0].innerText=st.address;}deliveryMode=st.deliveryMode||'fixed';deliveryFixedFee=Number(st.deliveryFixedFee??st.deliveryFee??deliveryFee);deliveryFee=deliveryFixedFee;deliveryZonesData=st.deliveryZones||{};updateFreeDeliveryBanner();renderDeliverySettings();if(st.waitTime!=null){const wt=document.getElementById('waitTimeText');if(wt)wt.innerText='⏱️ Tempo de espera estimado: '+st.waitTime+' minutos';}applyStoreAvailability();if(cart.length)renderCart();}
+        function applyPublicSettings(){const st=managedSettings||{};const name=document.querySelector('.merchant-name');const detail=document.querySelector('.merchant-details');if(name&&st.name)name.innerText=st.name;if(detail&&st.phone){const ps=detail.querySelectorAll('p');if(ps[1])ps[1].innerText=st.phone;}if(detail&&st.address){const ps=detail.querySelectorAll('p');if(ps[0])ps[0].innerText=st.address;}deliveryMode=st.deliveryMode||'fixed';deliveryFixedFee=Number(st.deliveryFixedFee??st.deliveryFee??deliveryFee);deliveryFee=deliveryFixedFee;deliveryZonesData=st.deliveryZones||{};couponsData=st.coupons||{};updateFreeDeliveryBanner();renderCoupons();renderDeliverySettings();if(st.waitTime!=null){const wt=document.getElementById('waitTimeText');if(wt)wt.innerText='⏱️ Tempo de espera estimado: '+st.waitTime+' minutos';}applyStoreAvailability();if(cart.length)renderCart();}
         function applyStoreAvailability(){ const status=document.getElementById('storeStatus'); if(!status)return; const open=isStoreOpenNow(); status.innerText=open?'Aberto agora — faça seu pedido':'Fechado no momento'; status.classList.toggle('open',open); }
         function isStoreOpenNow(){ const h=managedSettings.hours; if(!h)return true; const d=['sun','mon','tue','wed','thu','fri','sat'][new Date().getDay()]; const x=h[d]; if(!x||x.closed)return false; const now=new Date(); const cur=now.getHours()*60+now.getMinutes(); const [a,b]=[x.open,x.close].map(v=>{const q=String(v||'00:00').split(':');return Number(q[0])*60+Number(q[1]);}); return cur>=a&&cur<=b; }
         function renderManagementProducts(){
@@ -1683,11 +1696,26 @@
         function renderDeliveryZoneSelector(){const wrap=document.getElementById('deliveryZoneWrap'),sel=document.getElementById('deliveryZoneSelect');if(!wrap||!sel)return;const visible=!isPickupSelected()&&deliveryMode==='zones';wrap.style.display=visible?'block':'none';if(!visible)return;const old=selectedDeliveryZone;sel.innerHTML='<option value="">Selecione seu bairro</option>'+Object.entries(deliveryZonesData||{}).sort((a,b)=>String(a[1].name).localeCompare(String(b[1].name))).map(([id,z])=>`<option value="${id}">${escapeAdminText(z.name)} — R$ ${Number(z.fee||0).toFixed(2).replace('.',',')}</option>`).join('');if(deliveryZonesData[old])sel.value=old;}
         function selectDeliveryZone(id){selectedDeliveryZone=id;renderCart();}
 
+        function getCartSubtotal(){return (cart||[]).reduce((sum,item)=>sum+Number(item.price||0)*Number(item.qty||0),0);}
+        function refreshCouponVisual(){const subtotal=getCartSubtotal(),discount=getCouponDiscount(subtotal),fee=getCurrentDeliveryFee(),total=Math.max(0,subtotal-discount)+fee,line=document.getElementById('couponDiscountLine'),totalEl=document.getElementById('modalTotal'),float=document.getElementById('cartTotalFloat');if(line)line.innerHTML=discount>0?'<span>Desconto ('+escapeAdminText(appliedCouponCode)+'):</span><span>- R$ '+discount.toFixed(2).replace('.',',')+'</span>':'';if(totalEl)totalEl.textContent=total.toFixed(2).replace('.',',');if(float)float.textContent=total.toFixed(2).replace('.',',');}
+        function getCouponDiscount(subtotal){const c=appliedCouponData||couponsData[appliedCouponCode];if(!c||c.active===false||subtotal<Number(c.minSubtotal||0))return 0;const isPercent=['percent','percentage','porcentagem','%'].includes(String(c.type||'').toLowerCase());const raw=isPercent?subtotal*(Number(c.value||0)/100):Number(c.value||0);return Math.min(subtotal,Math.max(0,raw));}
+        function applyCouponCode(){const code=(document.getElementById('couponInput')?.value||'').trim().toUpperCase(),msg=document.getElementById('couponMessage');if(!code||!couponsData[code]||couponsData[code].active===false){appliedCouponCode='';appliedCouponData=null;if(msg)msg.innerText='Cupom inválido ou inativo.';try{renderCart();}catch(e){}refreshCouponVisual();return;}const c=couponsData[code],subtotal=getCartSubtotal();if(subtotal<Number(c.minSubtotal||0)){appliedCouponCode='';appliedCouponData=null;if(msg)msg.innerText='Este cupom exige pedido mínimo de R$ '+Number(c.minSubtotal).toFixed(2).replace('.',',');try{renderCart();}catch(e){}refreshCouponVisual();return;}appliedCouponCode=code;appliedCouponData={...c};if(msg)msg.innerText='Cupom aplicado: '+code;try{renderCart();}catch(e){console.warn('Cupom aplicado, atualização visual direta:',e);}refreshCouponVisual();}
+        function clearCouponForm(){['couponCodeAdmin','couponValueAdmin','couponMinAdmin','couponIdAdmin'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});const t=document.getElementById('couponTypeAdmin');if(t)t.value='percent';const a=document.getElementById('couponActiveAdmin');if(a)a.checked=true;}
+        function saveCoupon(){const code=(document.getElementById('couponCodeAdmin')?.value||'').trim().toUpperCase(),type=document.getElementById('couponTypeAdmin')?.value||'percent',value=Number(document.getElementById('couponValueAdmin')?.value||0),minSubtotal=Number(document.getElementById('couponMinAdmin')?.value||0);if(!code||value<=0)return alert('Informe o código e o valor do desconto.');couponsData[code]={code,type,value,minSubtotal,active:document.getElementById('couponActiveAdmin')?.checked!==false,updatedAt:new Date().toISOString()};db.ref('storeSettings/coupons').set(couponsData).then(()=>{clearCouponForm();alert('Cupom salvo.');});}
+        function editCoupon(code){const c=couponsData[code];if(!c)return;document.getElementById('couponIdAdmin').value=code;document.getElementById('couponCodeAdmin').value=code;document.getElementById('couponTypeAdmin').value=c.type||'percent';document.getElementById('couponValueAdmin').value=c.value||0;document.getElementById('couponMinAdmin').value=c.minSubtotal||0;document.getElementById('couponActiveAdmin').checked=c.active!==false;}
+        function deleteCoupon(code){if(confirm('Excluir este cupom?')){delete couponsData[code];db.ref('storeSettings/coupons').set(couponsData);}}
+        function renderCoupons(){const box=document.getElementById('couponsList');if(!box)return;const rows=Object.entries(couponsData||{});box.innerHTML=rows.length?rows.map(([code,c])=>`<div class="management-row"><div><strong>${escapeAdminText(code)}</strong><small>${['percent','percentage','porcentagem','%'].includes(String(c.type||'').toLowerCase())?Number(c.value)+'%':'R$ '+Number(c.value).toFixed(2).replace('.',',')} · mínimo R$ ${Number(c.minSubtotal||0).toFixed(2).replace('.',',')} · ${c.active===false?'Inativo':'Ativo'}</small></div><button onclick="editCoupon('${code}')">Editar</button><button style="background:#552;color:#fff" onclick="deleteCoupon('${code}')">Excluir</button></div>`).join(''):'<p class="ka-note">Nenhum cupom cadastrado.</p>';}
+
         function renderSettingsForm(){const st=managedSettings;[['settingStoreName',st.name||''],['settingPhone',st.phone||''],['settingAddress',st.address||''],['settingStoreMapLink',st.storeMapLink||''],['settingDeliveryFee',st.deliveryFee??6],['settingWaitTime',st.waitTime??40]].forEach(([id,v])=>{const el=document.getElementById(id);if(el&&document.activeElement!==el)el.value=v;});const auto=document.getElementById('settingAutoDeduct');if(auto)auto.checked=st.kitchenAutoDeduct!==false;renderHoursForm();}
         function saveStoreSettings(){const fee=Number(document.getElementById('settingDeliveryFee').value||0);const data={name:document.getElementById('settingStoreName').value.trim(),phone:document.getElementById('settingPhone').value.trim(),address:document.getElementById('settingAddress').value.trim(),storeMapLink:document.getElementById('settingStoreMapLink')?.value.trim()||'',deliveryFee:fee,deliveryFixedFee:fee,waitTime:Number(document.getElementById('settingWaitTime').value||40),kitchenAutoDeduct:document.getElementById('settingAutoDeduct')?.checked!==false};db.ref('storeSettings').update(data).then(()=>alert('Configurações salvas.'));}
         function renderReports(){const start=document.getElementById('reportStartDate').value;const end=document.getElementById('reportEndDate').value;const rows=Object.values(adminOrdersCache).filter(o=>orderStatus(o)!=='cancelado'&&(()=>{const d=(o.timestamp||'').slice(0,10);return (!start||d>=start)&&(!end||d<=end);})());const total=rows.reduce((a,o)=>a+Number(o.total||0),0);const summary=document.getElementById('reportSummary');if(summary)summary.innerText=`${rows.length} pedido(s) · Total R$ ${total.toFixed(2).replace('.',',')} · Ticket médio R$ ${(rows.length?total/rows.length:0).toFixed(2).replace('.',',')}`;const days={};rows.forEach(o=>{const d=(o.timestamp||'').slice(5,10)||'--';days[d]=(days[d]||0)+Number(o.total||0)});const vals=Object.entries(days).slice(-14);const max=Math.max(...vals.map(x=>x[1]),1);const chart=document.getElementById('reportChart');if(chart)chart.innerHTML=vals.map(([d,v])=>`<div class="report-bar-item" style="height:${Math.max(4,v/max*100)}%" title="R$ ${v.toFixed(2).replace('.',',')}"><span>${d}</span></div>`).join('');}
         function exportOrdersCsv(){const rows=[['Pedido','Data','Cliente','Telefone','Pagamento','Total','Status']].concat(Object.values(adminOrdersCache).map(o=>[o.orderId,o.timestamp,o.clientName,o.clientPhone,o.payment,o.total,o.orderStatus]));const csv=rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='relatorio-pedidos.csv';a.click();URL.revokeObjectURL(a.href);}
 
+        function initCustomerRegistry(){if(customersInitialized)return;customersInitialized=true;db.ref('customers').on('value',snap=>{customersData=snap.val()||{};renderRegisteredCustomers();});}
+        async function saveCustomerRecord(orderKey,order){const phone=publicPhone(order.clientPhone);if(phone.length<8)return;const ref=db.ref('customers/'+phone),now=order.timestamp||new Date().toISOString();await ref.transaction(current=>{const c=current||{phone,name:order.clientName||'Cliente',firstSeenAt:now,orderCount:0,orders:{}};c.phone=phone;c.name=order.clientName||c.name||'Cliente';c.lastOrderAt=now;c.orderCount=Number(c.orderCount||0)+1;c.status=c.orderCount>1?'antigo':'novato';c.orders=c.orders||{};c.orders[orderKey]={orderId:order.orderId,total:Number(order.total||0),timestamp:now,orderStatus:order.orderStatus||'novo'};return c;});}
+        function openCustomerRecord(phone){const c=customersData[phone];const box=document.getElementById('customerDetail');if(!box||!c)return;const rows=Object.values(c.orders||{}).sort((a,b)=>String(b.timestamp||'').localeCompare(String(a.timestamp||'')));box.innerHTML=`<div class="delivery-admin-card"><h5>Ficha de ${escapeAdminText(c.name||'Cliente')}</h5><p class="ka-note">WhatsApp: ${escapeAdminText(c.phone)}<br>Registrado em: ${c.firstSeenAt?new Date(c.firstSeenAt).toLocaleString('pt-BR'):''}<br>Último pedido: ${c.lastOrderAt?new Date(c.lastOrderAt).toLocaleString('pt-BR'):''}<br>Total de pedidos: ${Number(c.orderCount||0)}</p><h5>Pedidos deste cliente</h5>${rows.length?rows.map(o=>`<div class="rank-row"><span>Pedido #${escapeAdminText(o.orderId||'')} · ${o.timestamp?new Date(o.timestamp).toLocaleDateString('pt-BR'):''}</span><span>R$ ${Number(o.total||0).toFixed(2).replace('.',',')}</span></div>`).join(''):'<p class="ka-note">Nenhum pedido.</p>'}</div>`;}
+        function campaignCustomer(phone,name){const clean=String(phone||'').replace(/\D/g,''),msg=encodeURIComponent(`Olá ${name||''}! Aqui é da PR Burguer na Brasa 🍔🔥 Temos novidades e combos especiais esperando por você. Faça seu pedido pelo nosso cardápio digital!`);window.open('https://api.whatsapp.com/send?phone=55'+clean+'&text='+msg,'_blank');}
+        function renderRegisteredCustomers(){const box=document.getElementById('registeredCustomersList');if(!box)return;const rows=Object.entries(customersData||{}).sort((a,b)=>String(b[1].lastOrderAt||'').localeCompare(String(a[1].lastOrderAt||'')));const summary=document.getElementById('customerRegistrySummary');if(summary)summary.innerText=rows.length+' cliente(s) reconhecido(s) automaticamente';box.innerHTML=rows.length?rows.map(([phone,c])=>{const old=Number(c.orderCount||0)>1;return `<div class="customer-registry-row"><strong>${escapeAdminText(c.name||'Cliente')}</strong><span>${escapeAdminText(phone)}</span><span class="${old?'customer-old':'customer-new'}">${old?'Antigo':'Novato'}</span><span>${Number(c.orderCount||0)} pedido(s)<br><small>${c.firstSeenAt?new Date(c.firstSeenAt).toLocaleDateString('pt-BR'):''}</small></span><span><button onclick="openCustomerRecord('${phone}')">Ficha</button><button onclick="campaignCustomer('${phone}','${escapeAdminText(c.name||'Cliente')}')">WhatsApp</button></span></div>`}).join(''):'<p class="ka-note">Nenhum cliente cadastrado ainda.</p>';}
         function handleOrdersSnapshot(snapshot) {
             const data = snapshot.val();
             let productCounts = {};
@@ -2231,18 +2259,21 @@
 
             const currentDeliveryFee = getCurrentDeliveryFee();
             renderDeliveryZoneSelector();
-            let totalGeral = subtotal + currentDeliveryFee;
+            const couponDiscount=getCouponDiscount(subtotal);
+            let totalGeral = Math.max(0,subtotal-couponDiscount) + currentDeliveryFee;
             const feeText = document.getElementById('deliveryFeeText'); if (feeText) feeText.innerText = isPickupSelected() ? 'R$ 0,00 (retirada)' : 'R$ ' + currentDeliveryFee.toFixed(2).replace('.', ',');
             document.getElementById('cartFloat').style.display = 'flex';
             document.getElementById('cartCount').innerText = count + (count === 1 ? ' item' : ' itens');
             document.getElementById('cartTotalFloat').innerText = totalGeral.toFixed(2).replace('.', ',');
             document.getElementById('modalSubtotal').innerText = subtotal.toFixed(2).replace('.', ',');
+            const discountLine=document.getElementById('couponDiscountLine');if(discountLine)discountLine.innerHTML=couponDiscount>0?`<span>Desconto (${escapeAdminText(appliedCouponCode)}):</span><span>- R$ ${couponDiscount.toFixed(2).replace('.',',')}</span>`:'';
             document.getElementById('modalTotal').innerText = totalGeral.toFixed(2).replace('.', ',');
+            refreshCouponVisual();
         }
 
         function toggleModal(show) { document.getElementById('cartModal').style.display = show ? 'flex' : 'none'; if(show) { refreshCartDeliverySummary(); renderDeliveryZoneSelector(); } }
 
-        function refreshCartDeliverySummary(){const pickup=document.getElementById('fulfillmentPickup')?.classList.contains('selected')||selectedFulfillment==='pickup',fee=pickup?0:getCurrentDeliveryFee(),feeText=document.getElementById('deliveryFeeText');if(feeText)feeText.textContent=pickup?'R$ 0,00 (retirada)':'R$ '+fee.toFixed(2).replace('.',',');const subText=document.getElementById('modalSubtotal');const totalText=document.getElementById('modalTotal');const subtotal=subText?Number(String(subText.textContent||'0').replace(/\./g,'').replace(',','.')):0;if(totalText)totalText.textContent=(subtotal+fee).toFixed(2).replace('.',',');const float=document.getElementById('cartTotalFloat');if(float)float.textContent=(subtotal+fee).toFixed(2).replace('.',',');}
+        function refreshCartDeliverySummary(){const pickup=document.getElementById('fulfillmentPickup')?.classList.contains('selected')||selectedFulfillment==='pickup',fee=pickup?0:getCurrentDeliveryFee(),feeText=document.getElementById('deliveryFeeText');if(feeText)feeText.textContent=pickup?'R$ 0,00 (retirada)':'R$ '+fee.toFixed(2).replace('.',',');const subText=document.getElementById('modalSubtotal');const totalText=document.getElementById('modalTotal');const subtotal=subText?Number(String(subText.textContent||'0').replace(/\./g,'').replace(',','.')):0,discount=getCouponDiscount(subtotal),total=Math.max(0,subtotal-discount)+fee;if(totalText)totalText.textContent=total.toFixed(2).replace('.',',');const discountLine=document.getElementById('couponDiscountLine');if(discountLine)discountLine.innerHTML=discount>0?`<span>Desconto (${escapeAdminText(appliedCouponCode)}):</span><span>- R$ ${discount.toFixed(2).replace('.',',')}</span>`:'';const float=document.getElementById('cartTotalFloat');if(float)float.textContent=total.toFixed(2).replace('.',',');}
         function selectFulfillment(mode){selectedFulfillment=mode==='pickup'?'pickup':'delivery';const delivery=document.getElementById('fulfillmentDelivery'),pickup=document.getElementById('fulfillmentPickup'),note=document.getElementById('fulfillmentNote'),label=document.getElementById('clientAddressLabel'),address=document.getElementById('clientAddress');delivery?.classList.toggle('selected',mode==='delivery');pickup?.classList.toggle('selected',mode==='pickup');if(mode==='pickup'){if(note)note.innerText='Retire o pedido no endereço da hamburgueria.';if(label)label.innerText='Observação para retirada (opcional):';if(address){address.required=false;address.placeholder='Ex.: retirar às 20h (opcional)';}}else{if(note)note.innerText='Receba no endereço informado.';if(label)label.innerText='Endereço completo de entrega:';if(address){address.required=true;address.placeholder='Rua, número, bairro e pontos de referência...';}}if(cart.length){try{renderCart();}catch(e){console.warn('Atualização visual do carrinho:',e);}}refreshCartDeliverySummary();setTimeout(refreshCartDeliverySummary,60);setTimeout(refreshCartDeliverySummary,300);setTimeout(refreshCartDeliverySummary,800);}
 
         function selectPayment(method) {
@@ -2301,7 +2332,8 @@
                 subtotal += (item.price * item.qty);
                 if (item.category === 'Hambúrgueres') totalBurgersInCart += item.qty;
             });
-            let totalFinal = subtotal + currentDeliveryFee;
+            const couponDiscount = getCouponDiscount(subtotal);
+            let totalFinal = Math.max(0,subtotal-couponDiscount) + currentDeliveryFee;
 
             // Salva pedido no Firebase para ranqueamento em tempo real e histórico financeiro/CRM
             const orderPayload = {
@@ -2324,6 +2356,7 @@
             const orderRef = db.ref('orders').push();
             orderPayload.firebaseKey = orderRef.key;
             orderRef.set(orderPayload).catch(error => console.error('Falha ao salvar pedido:', error));
+            saveCustomerRecord(orderRef.key,orderPayload);
             localStorage.setItem('prLastOrderPhone', publicPhone(phoneClient));
             localStorage.setItem('prLastTrackingToken', orderRef.key);
             syncPublicTracking(orderRef.key, orderPayload);
@@ -2369,6 +2402,7 @@
 
             message += `-------------------------------------------\n`;
             message += `💰 *SUBTOTAL:* R$ ${subtotal.toFixed(2).replace('.', ',')}\n`;
+            if(couponDiscount>0)message += `🎟️ *DESCONTO (${appliedCouponCode}):* - R$ ${couponDiscount.toFixed(2).replace('.', ',')}\n`;
             message += isPickupSelected() ? `🏪 *RETIRADA:* Sem taxa de entrega\n` : `🚚 *TAXA DE ENTREGA:* R$ ${currentDeliveryFee.toFixed(2).replace('.', ',')}${deliveryZoneName ? ' — '+deliveryZoneName : ''}\n`;
             message += `⭐ *TOTAL GERAL:* R$ ${totalFinal.toFixed(2).replace('.', ',')}\n`;
             message += `-------------------------------------------\n`;
