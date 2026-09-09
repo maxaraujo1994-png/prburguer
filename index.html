@@ -814,6 +814,15 @@
 
         .delivery-admin-card{background:#181818;border:1px solid #333;border-radius:8px;padding:11px;margin-bottom:10px}.delivery-admin-card h5{margin:0 0 8px;color:#c5a85c}.delivery-status{font-size:.72rem;color:#999}.delivery-driver-select{background:#111;border:1px solid #444;color:#fff;border-radius:4px;padding:5px;max-width:170px}.delivery-history-row{display:grid;grid-template-columns:1fr .8fr .8fr .8fr;gap:8px;padding:8px 0;border-bottom:1px solid #292929;font-size:.76rem}.delivery-history-row strong{color:#fff}.delivery-history-row span:last-child{color:#c5a85c}@media(max-width:650px){.delivery-history-row{grid-template-columns:1fr 1fr}.delivery-history-row span:last-child{grid-column:1/-1}}
 
+
+        .free-delivery-banner{display:none;background:linear-gradient(90deg,#173c32,#245848);color:#eafff8;border:1px solid #2ec4b6;border-radius:8px;margin:10px auto;padding:10px 14px;max-width:900px;text-align:center;font-weight:800}.delivery-zone-admin{display:grid;grid-template-columns:1fr .7fr auto auto;gap:7px;align-items:center;padding:8px 0;border-bottom:1px solid #292929;font-size:.8rem}.delivery-zone-admin input{background:#111;color:#fff;border:1px solid #444;border-radius:4px;padding:7px}.order-notification{display:none;position:fixed;right:16px;top:16px;z-index:9999;background:#173c32;color:#fff;border:1px solid #2ec4b6;border-radius:9px;padding:13px 15px;box-shadow:0 8px 30px #0009;max-width:320px}.order-notification strong{display:block;color:#8ff7e9;margin-bottom:4px}@media(max-width:650px){.delivery-zone-admin{grid-template-columns:1fr 1fr}.delivery-zone-admin button:last-child{grid-column:auto}}
+
+
+        .tracking-float{position:fixed;left:16px;bottom:18px;z-index:900;background:#c5a85c;color:#111;border:0;border-radius:22px;padding:10px 14px;font-weight:800;box-shadow:0 4px 14px #0008;cursor:pointer}.tracking-modal{display:none;position:fixed;inset:0;background:#000b;z-index:5000;align-items:center;justify-content:center;padding:16px}.tracking-box{width:min(520px,100%);max-height:90vh;overflow:auto;background:#151515;border:1px solid #444;border-radius:10px;padding:16px;color:#eee}.tracking-box h3{color:#c5a85c;margin:0 0 10px}.tracking-box input{width:100%;background:#0e0e0e;color:#fff;border:1px solid #444;border-radius:5px;padding:10px;margin:5px 0 9px}.tracking-actions{display:flex;gap:7px;flex-wrap:wrap}.tracking-actions button{background:#c5a85c;color:#111;border:0;border-radius:5px;padding:8px 11px;font-weight:700}.tracking-actions button.secondary{background:#292929;color:#ddd}.tracking-status-list{margin-top:14px}.tracking-status{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid #292929}.tracking-dot{width:13px;height:13px;border-radius:50%;background:#555;flex:none;margin-top:3px}.tracking-status.done .tracking-dot,.tracking-status.current .tracking-dot{background:#2ec4b6}.tracking-status.current strong{color:#2ec4b6}.tracking-driver{background:#183d35;border:1px solid #2ec4b6;border-radius:7px;padding:10px;margin-top:12px}.tracking-driver a{display:inline-block;color:#111;background:#2ec4b6;padding:7px 9px;border-radius:5px;text-decoration:none;font-weight:700;margin-top:7px}.tracking-muted{color:#999;font-size:.78rem}
+
+
+        .driver-float{position:static;display:block;margin:18px auto 86px;background:#292929;color:#ddd;border:1px solid #555;border-radius:18px;padding:8px 12px;font-size:.72rem;cursor:pointer}.driver-order-card{background:#1b1b1b;border:1px solid #3b3b3b;border-radius:7px;padding:10px;margin-top:8px}.driver-order-card strong{color:#c5a85c}.driver-order-card button{background:#c5a85c;border:0;border-radius:4px;padding:7px;margin:6px 5px 0 0;font-weight:700}.driver-order-card a{color:#2ec4b6}
+
 </style>
 </head>
 <body>
@@ -825,6 +834,9 @@
             <span class="promo-ticker-item" id="tickerFridayPromo" style="display: none;">🍟 SEXTA DA BATATA GRÁTIS! Ganhe 1 Batata frita individual na compra de qualquer hambúrguer individual! 🎉</span>
         </div>
     </div>
+
+    <div id="freeDeliveryBanner" class="free-delivery-banner">🎉 Oba! Hoje a entrega é grátis. Aproveite!</div>
+    <div id="orderNotification" class="order-notification"><strong>🔔 Novo pedido</strong><span id="orderNotificationText"></span></div>
 
     <div class="merchant-cover"></div>
 
@@ -1253,6 +1265,7 @@
                         <button class="admin-tab" data-tab="settings" onclick="setAdminTab('settings')">⚙️ Configurações</button>
                         <button class="admin-tab" data-tab="kitchen" onclick="setAdminTab('kitchen')">🍳 Cozinha</button>
                         <button class="admin-tab" data-tab="deliverers" onclick="setAdminTab('deliverers')">🛵 Entregadores</button>
+                        <button class="admin-tab" data-tab="delivery" onclick="setAdminTab('delivery')">🚚 Entrega</button>
                     </div>
                     <section id="adminPanel-orders" data-admin-panel="orders">
                         <div class="admin-toolbar">
@@ -1307,6 +1320,10 @@
                         <div class="delivery-admin-card"><h5>Entregadores cadastrados</h5><div id="deliverersList"><p class="ka-note">Nenhum entregador cadastrado.</p></div></div>
                         <div class="delivery-admin-card"><h5>Histórico de entregas</h5><p class="ka-note">Entregas concluídas, agrupadas por entregador. Pedidos cancelados não entram no total.</p><div id="deliveryHistoryList"></div></div>
                     </section>
+                    <section id="adminPanel-delivery" data-admin-panel="delivery" style="display:none;">
+                        <div class="delivery-admin-card"><h5>🚚 Cadastro da forma de entrega</h5><p class="ka-note">A alteração é salva no Firebase e aparece no carrinho em tempo real para os clientes.</p><div class="management-grid"><select id="deliveryModeAdmin" onchange="renderDeliverySettings()"><option value="fixed">Entrega com preço fixo</option><option value="free">Entrega grátis</option><option value="zones">Entrega por bairro ou região</option></select><input id="deliveryFixedFee" type="number" min="0" step="0.01" placeholder="Valor fixo da entrega"></div><button class="admin-action" style="margin-top:9px;" onclick="saveDeliverySettings()">Salvar forma de entrega</button><div id="deliveryFreePreview" class="ka-note" style="margin-top:9px;"></div></div>
+                        <div class="delivery-admin-card"><h5>📍 Bairros e setores</h5><p class="ka-note">Cadastre quantos bairros quiser. O cliente selecionará o bairro no carrinho e a taxa será aplicada automaticamente.</p><div class="management-grid"><input id="deliveryZoneName" placeholder="Ex.: Santa Bárbara"><input id="deliveryZoneFee" type="number" min="0" step="0.01" placeholder="Taxa do bairro"><input id="deliveryZoneId" type="hidden"></div><div class="printer-actions" style="margin-top:9px;"><button class="admin-action" onclick="saveDeliveryZone()">Salvar bairro</button><button class="admin-action secondary" onclick="clearDeliveryZoneForm()">Limpar</button></div><div id="deliveryZonesAdminList" style="margin-top:10px;"></div></div>
+                    </section>
                     <section id="adminPanel-kitchen" data-admin-panel="kitchen" style="display:none;">
                         <div class="ka-dashboard">
                             <div class="kitchen-alert">Modo avançado: resumo, estoque, fichas técnicas e histórico ficam separados. O carrinho e os pedidos continuam fora deste módulo.</div>
@@ -1330,6 +1347,10 @@
             </div>
         </div>
     </div>
+
+    <div id="driverModal" class="tracking-modal"><div class="tracking-box"><div class="tracking-actions" style="justify-content:flex-end;"><button class="secondary" onclick="closeDriverPortal()">Fechar</button></div><h3>🛵 Área do entregador</h3><p class="tracking-muted">Entre com o WhatsApp e o código fornecido pela hamburgueria.</p><div id="driverLoginBox"><input id="driverLoginPhone" placeholder="WhatsApp com DDD"><input id="driverLoginCode" placeholder="Código de acesso"><div class="tracking-actions"><button onclick="loginDriverPortal()">Entrar</button></div></div><div id="driverPortalResult"></div></div></div>
+    <button id="trackingFloat" class="tracking-float" onclick="openCustomerTracking()">📦 Acompanhar pedido</button>
+    <div id="trackingModal" class="tracking-modal"><div class="tracking-box"><div class="tracking-actions" style="justify-content:flex-end;"><button class="secondary" onclick="minimizeCustomerTracking()">Minimizar</button><button class="secondary" onclick="closeCustomerTracking()">Fechar</button></div><h3>📦 Acompanhar pedido</h3><p class="tracking-muted">Informe o WhatsApp usado no pedido. O acompanhamento continua disponível mesmo se você fechar a página.</p><input id="trackingPhone" placeholder="WhatsApp com DDD"><div class="tracking-actions"><button onclick="findCustomerTracking()">Buscar pedido</button></div><div id="trackingResult"></div></div></div>
 
     <!-- Barra Flutuante da Sacola -->
     <div class="cart-float" id="cartFloat" style="display: none;">
@@ -1362,6 +1383,7 @@
 
             <div class="form-group">
                 <div class="form-group"><label>Como deseja receber?</label><div class="payment-options"><div class="payment-btn selected" id="fulfillmentDelivery" onclick="selectFulfillment('delivery')">🛵 Entrega</div><div class="payment-btn" id="fulfillmentPickup" onclick="selectFulfillment('pickup')">🏪 Retirada</div></div><small id="fulfillmentNote" style="color:#888;display:block;margin-top:6px;">Receba no endereço informado.</small></div>
+                <div id="deliveryZoneWrap" class="form-group" style="display:none;"><label for="deliveryZoneSelect">Bairro ou região</label><select id="deliveryZoneSelect" onchange="selectDeliveryZone(this.value)"></select><small style="color:#888;display:block;margin-top:5px;">A taxa será calculada conforme a região escolhida.</small></div>
                 <label for="clientAddress" id="clientAddressLabel">Endereço Completo de Entrega:</label>
                 <textarea id="clientAddress" rows="3" placeholder="Rua, número, bairro e pontos de referência..."></textarea>
             </div>
@@ -1450,6 +1472,10 @@
         let cart = [];
         let selectedPaymentMethod = '';
         let selectedFulfillment = 'delivery';
+        let selectedDeliveryZone = '';
+        let deliveryMode = 'fixed';
+        let deliveryFixedFee = 6.00;
+        let deliveryZonesData = {};
         let deliveryFee = 6.00;
         let currentProductOpening = null;
         let ordersListenerAttached = false;
@@ -1469,11 +1495,22 @@
         let kitchenAdvancedTab = 'overview';
         let deliverersData = {};
         let deliveryInitialized = false;
+        let ordersReadyForNotifications = false;
+        let adminSessionStartedAt = 0;
+        let customerTrackingToken = localStorage.getItem('prLastTrackingToken') || '';
+        let customerTrackingListener = null;
+        let lastCustomerTrackingStatus = localStorage.getItem('prLastTrackingStatus') || '';
+        let notificationAudioContext = null;
+        let customerConfirmationInitialized = false;
+        let driverPortalSession = null;
+        let driverPortalListener = null;
+        let driverActionListenerInitialized = false;
         let catalogDefaults = [];
         let managedCategories = {};
         let deletedProducts = {};
         const isFriday = new Date().getDay() === 5;
 
+        document.addEventListener('click', unlockNotificationAudio, {passive:true});
         window.addEventListener('DOMContentLoaded', () => {
             if (isFriday) {
                 document.getElementById('tickerFridayPromo').style.display = 'inline-block';
@@ -1485,6 +1522,8 @@
                     renderPrinterStatus();
                     initKitchenData();
                     initDeliveryData();
+                    initCustomerConfirmationListener();
+                    initDriverActionListener();
                 }
             });
             initManagementData();
@@ -1494,6 +1533,9 @@
         function initRealtimeSync() {
             if (ordersListenerAttached) return;
             ordersListenerAttached = true;
+            ordersReadyForNotifications = false;
+            adminSessionStartedAt = Date.now();
+            setTimeout(()=>{ordersReadyForNotifications=true;},1800);
             db.ref('orders').on('value', handleOrdersSnapshot);
             db.ref('orders').on('child_added', handleNewOrderForPrinting);
         }
@@ -1563,7 +1605,9 @@
             products.filter(p=>!document.querySelector(`.product-card[data-product-id="${p.id}"]`) && managedProducts[p.id]).forEach(p=>{const section=ensureDynamicCategory(p.category)||document.getElementById('hamburgueres');const grid=section?.querySelector('.menu-grid');if(!grid)return;const card=document.createElement('div');card.className='product-card';card.dataset.productId=p.id;card.innerHTML=`<div class="product-info-left"><div class="product-name"></div><div class="product-desc"></div><div class="product-price"></div></div><div class="product-image-right"><img alt=""></div>`;grid.appendChild(card);applyManagedCatalog();});
             applyStoreAvailability();
         }
-        function applyPublicSettings(){ const st=managedSettings; const name=document.querySelector('.merchant-name');const detail=document.querySelector('.merchant-details'); if(name&&st.name)name.innerText=st.name; if(detail&&st.phone){const ps=detail.querySelectorAll('p'); if(ps[1])ps[1].innerText=st.phone;} if(detail&&st.address){const ps=detail.querySelectorAll('p'); if(ps[0])ps[0].innerText=st.address;} if(st.deliveryFee!=null){deliveryFee=Number(st.deliveryFee);const fee=document.getElementById('deliveryFeeText');if(fee)fee.innerText='R$ '+deliveryFee.toFixed(2).replace('.',',');} if(st.waitTime!=null){const wt=document.getElementById('waitTimeText');if(wt)wt.innerText='⏱️ Tempo de espera estimado: '+st.waitTime+' minutos';} applyStoreAvailability(); }
+        function getCurrentDeliveryFee(){if(String(selectedFulfillment)!=='delivery')return 0;if(deliveryMode==='free')return 0;if(deliveryMode==='zones')return Number(deliveryZonesData[selectedDeliveryZone]?.fee||0);return Number(deliveryFixedFee||deliveryFee||0);}
+        function updateFreeDeliveryBanner(){const b=document.getElementById('freeDeliveryBanner');if(!b)return;b.style.display=deliveryMode==='free'?'block':'none';}
+        function applyPublicSettings(){const st=managedSettings||{};const name=document.querySelector('.merchant-name');const detail=document.querySelector('.merchant-details');if(name&&st.name)name.innerText=st.name;if(detail&&st.phone){const ps=detail.querySelectorAll('p');if(ps[1])ps[1].innerText=st.phone;}if(detail&&st.address){const ps=detail.querySelectorAll('p');if(ps[0])ps[0].innerText=st.address;}deliveryMode=st.deliveryMode||'fixed';deliveryFixedFee=Number(st.deliveryFixedFee??st.deliveryFee??deliveryFee);deliveryFee=deliveryFixedFee;deliveryZonesData=st.deliveryZones||{};updateFreeDeliveryBanner();renderDeliverySettings();if(st.waitTime!=null){const wt=document.getElementById('waitTimeText');if(wt)wt.innerText='⏱️ Tempo de espera estimado: '+st.waitTime+' minutos';}applyStoreAvailability();if(cart.length)renderCart();}
         function applyStoreAvailability(){ const status=document.getElementById('storeStatus'); if(!status)return; const open=isStoreOpenNow(); status.innerText=open?'Aberto agora — faça seu pedido':'Fechado no momento'; status.classList.toggle('open',open); }
         function isStoreOpenNow(){ const h=managedSettings.hours; if(!h)return true; const d=['sun','mon','tue','wed','thu','fri','sat'][new Date().getDay()]; const x=h[d]; if(!x||x.closed)return false; const now=new Date(); const cur=now.getHours()*60+now.getMinutes(); const [a,b]=[x.open,x.close].map(v=>{const q=String(v||'00:00').split(':');return Number(q[0])*60+Number(q[1]);}); return cur>=a&&cur<=b; }
         function renderManagementProducts(){
@@ -1609,8 +1653,17 @@
         const dayNames=[['mon','Segunda'],['tue','Terça'],['wed','Quarta'],['thu','Quinta'],['fri','Sexta'],['sat','Sábado'],['sun','Domingo']];
         function renderHoursForm(){const box=document.getElementById('managementHoursList');if(!box)return;const h=managedSettings.hours||{};box.innerHTML=dayNames.map(([id,n])=>{const x=h[id]||{open:'19:00',close:'23:00'};return `<div class="hours-row"><label>${n}</label><input id="hourOpen_${id}" type="time" value="${x.open||'19:00'}"><input id="hourClose_${id}" type="time" value="${x.close||'23:00'}"></div>`}).join('');}
         function saveStoreHours(){const hours={};dayNames.forEach(([id])=>hours[id]={open:document.getElementById('hourOpen_'+id).value,close:document.getElementById('hourClose_'+id).value,closed:false});db.ref('storeSettings/hours').set(hours).then(()=>alert('Horários salvos.'));}
+        function renderDeliverySettings(){const mode=document.getElementById('deliveryModeAdmin');if(!mode)return;if(document.activeElement!==mode)mode.value=deliveryMode;const fee=document.getElementById('deliveryFixedFee');if(fee&&document.activeElement!==fee)fee.value=deliveryFixedFee;const preview=document.getElementById('deliveryFreePreview');if(preview)preview.innerText=deliveryMode==='free'?'Banner ativo no cardápio: “Oba! Hoje a entrega é grátis. Aproveite!”':deliveryMode==='zones'?'Os bairros cadastrados serão exibidos no carrinho.':'O carrinho usará a taxa fixa configurada.';const box=document.getElementById('deliveryZonesAdminList');if(box){const rows=Object.entries(deliveryZonesData||{});box.innerHTML=rows.length?rows.map(([id,z])=>`<div class="delivery-zone-admin"><strong>${escapeAdminText(z.name)}</strong><span>R$ ${Number(z.fee||0).toFixed(2).replace('.',',')}</span><button onclick="editDeliveryZone('${id}')">Editar</button><button onclick="deleteDeliveryZone('${id}')" style="background:#552;color:#fff">Excluir</button></div>`).join(''):'<p class="ka-note">Nenhum bairro cadastrado.</p>';}}
+        function saveDeliverySettings(){const mode=document.getElementById('deliveryModeAdmin')?.value||'fixed',fee=Number(document.getElementById('deliveryFixedFee')?.value||0);db.ref('storeSettings').update({deliveryMode:mode,deliveryFixedFee:fee,deliveryFee:fee,deliveryZones:deliveryZonesData||{}}).then(()=>alert('Forma de entrega atualizada. O carrinho foi sincronizado.'));}
+        function clearDeliveryZoneForm(){['deliveryZoneName','deliveryZoneFee','deliveryZoneId'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});}
+        function saveDeliveryZone(){const name=document.getElementById('deliveryZoneName')?.value.trim(),fee=Number(document.getElementById('deliveryZoneFee')?.value||0),id=document.getElementById('deliveryZoneId')?.value||productKey(name);if(!name||fee<0)return alert('Informe o nome do bairro e uma taxa válida.');deliveryZonesData[id]={name,fee};db.ref('storeSettings/deliveryZones').set(deliveryZonesData).then(()=>{clearDeliveryZoneForm();});}
+        function editDeliveryZone(id){const z=deliveryZonesData[id];if(!z)return;document.getElementById('deliveryZoneId').value=id;document.getElementById('deliveryZoneName').value=z.name||'';document.getElementById('deliveryZoneFee').value=z.fee||0;}
+        function deleteDeliveryZone(id){if(confirm('Excluir este bairro da entrega?')){delete deliveryZonesData[id];db.ref('storeSettings/deliveryZones').set(deliveryZonesData);if(selectedDeliveryZone===id)selectedDeliveryZone='';}}
+        function renderDeliveryZoneSelector(){const wrap=document.getElementById('deliveryZoneWrap'),sel=document.getElementById('deliveryZoneSelect');if(!wrap||!sel)return;const visible=selectedFulfillment==='delivery'&&deliveryMode==='zones';wrap.style.display=visible?'block':'none';if(!visible)return;const old=selectedDeliveryZone;sel.innerHTML='<option value="">Selecione seu bairro</option>'+Object.entries(deliveryZonesData||{}).sort((a,b)=>String(a[1].name).localeCompare(String(b[1].name))).map(([id,z])=>`<option value="${id}">${escapeAdminText(z.name)} — R$ ${Number(z.fee||0).toFixed(2).replace('.',',')}</option>`).join('');if(deliveryZonesData[old])sel.value=old;}
+        function selectDeliveryZone(id){selectedDeliveryZone=id;renderCart();}
+
         function renderSettingsForm(){const st=managedSettings;[['settingStoreName',st.name||''],['settingPhone',st.phone||''],['settingAddress',st.address||''],['settingDeliveryFee',st.deliveryFee??6],['settingWaitTime',st.waitTime??40]].forEach(([id,v])=>{const el=document.getElementById(id);if(el&&document.activeElement!==el)el.value=v;});const auto=document.getElementById('settingAutoDeduct');if(auto)auto.checked=st.kitchenAutoDeduct!==false;renderHoursForm();}
-        function saveStoreSettings(){const data={name:document.getElementById('settingStoreName').value.trim(),phone:document.getElementById('settingPhone').value.trim(),address:document.getElementById('settingAddress').value.trim(),deliveryFee:Number(document.getElementById('settingDeliveryFee').value||0),waitTime:Number(document.getElementById('settingWaitTime').value||40),kitchenAutoDeduct:document.getElementById('settingAutoDeduct')?.checked!==false};db.ref('storeSettings').update(data).then(()=>alert('Configurações salvas.'));}
+        function saveStoreSettings(){const fee=Number(document.getElementById('settingDeliveryFee').value||0);const data={name:document.getElementById('settingStoreName').value.trim(),phone:document.getElementById('settingPhone').value.trim(),address:document.getElementById('settingAddress').value.trim(),deliveryFee:fee,deliveryFixedFee:fee,waitTime:Number(document.getElementById('settingWaitTime').value||40),kitchenAutoDeduct:document.getElementById('settingAutoDeduct')?.checked!==false};db.ref('storeSettings').update(data).then(()=>alert('Configurações salvas.'));}
         function renderReports(){const start=document.getElementById('reportStartDate').value;const end=document.getElementById('reportEndDate').value;const rows=Object.values(adminOrdersCache).filter(o=>orderStatus(o)!=='cancelado'&&(()=>{const d=(o.timestamp||'').slice(0,10);return (!start||d>=start)&&(!end||d<=end);})());const total=rows.reduce((a,o)=>a+Number(o.total||0),0);const summary=document.getElementById('reportSummary');if(summary)summary.innerText=`${rows.length} pedido(s) · Total R$ ${total.toFixed(2).replace('.',',')} · Ticket médio R$ ${(rows.length?total/rows.length:0).toFixed(2).replace('.',',')}`;const days={};rows.forEach(o=>{const d=(o.timestamp||'').slice(5,10)||'--';days[d]=(days[d]||0)+Number(o.total||0)});const vals=Object.entries(days).slice(-14);const max=Math.max(...vals.map(x=>x[1]),1);const chart=document.getElementById('reportChart');if(chart)chart.innerHTML=vals.map(([d,v])=>`<div class="report-bar-item" style="height:${Math.max(4,v/max*100)}%" title="R$ ${v.toFixed(2).replace('.',',')}"><span>${d}</span></div>`).join('');}
         function exportOrdersCsv(){const rows=[['Pedido','Data','Cliente','Telefone','Pagamento','Total','Status']].concat(Object.values(adminOrdersCache).map(o=>[o.orderId,o.timestamp,o.clientName,o.clientPhone,o.payment,o.total,o.orderStatus]));const csv=rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(';')).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='relatorio-pedidos.csv';a.click();URL.revokeObjectURL(a.href);}
 
@@ -1659,25 +1712,44 @@
             });
         }
 
-        function handleNewOrderForPrinting(snapshot) {
-            const order = snapshot.val();
-            if (!order || order.printStatus !== 'pending') return;
-            if (printerConnection || printerMode === 'bridge') printOrderAutomatically(snapshot.key, order);
-        }
+        function playNewOrderSound(){try{if(!notificationAudioContext)unlockNotificationAudio();if(notificationAudioContext){notificationAudioContext.resume();[880,660,880].forEach((freq,i)=>{const o=notificationAudioContext.createOscillator(),g=notificationAudioContext.createGain();o.frequency.value=freq;g.gain.value=.07;o.connect(g);g.connect(notificationAudioContext.destination);o.start(notificationAudioContext.currentTime+i*.18);o.stop(notificationAudioContext.currentTime+i*.18+.12);});}}catch(e){}if(navigator.vibrate)navigator.vibrate([180,80,180]);}
+        function showNewOrderNotification(order){const text=document.getElementById('orderNotificationText'),box=document.getElementById('orderNotification');if(text)text.innerText='Pedido #'+(order.orderId||'')+' de '+(order.clientName||'Cliente')+' — R$ '+Number(order.total||0).toFixed(2).replace('.',',');if(box){box.style.display='block';setTimeout(()=>box.style.display='none',7000);}playNewOrderSound();if('Notification' in window&&Notification.permission==='granted')new Notification('Novo pedido recebido',{body:'Pedido #'+(order.orderId||'')+' — R$ '+Number(order.total||0).toFixed(2).replace('.',',')});else if('Notification' in window&&Notification.permission==='default')Notification.requestPermission();}
+        function initCustomerConfirmationListener(){if(customerConfirmationInitialized)return;customerConfirmationInitialized=true;db.ref('deliveryConfirmations').on('child_added',async s=>{const key=s.key;if(!key)return;const snap=await db.ref('orders/'+key).once('value');const order=snap.val();if(order&&order.orderStatus!=='entregue')await updateOrderStatus(key,'entregue');});}
+        function confirmCustomerDelivery(token){if(!token)return;db.ref('deliveryConfirmations/'+token).set({confirmedAt:new Date().toISOString(),source:'cliente'}).then(()=>alert('Recebimento confirmado. Obrigado!'));}
+        async function initDriverActionListener(){if(driverActionListenerInitialized)return;driverActionListenerInitialized=true;db.ref('driverActions').on('child_added',async snap=>{const action=snap.val();if(!action||!action.orderKey)return;const os=await db.ref('orders/'+action.orderKey).once('value'),order=os.val();if(order&&order.assignedDriverId===action.driverId&&['saiu_entrega','entregue'].includes(action.status))await updateOrderStatus(action.orderKey,action.status);db.ref('driverActions/'+snap.key).remove();});}
+        function openDriverPortal(){document.getElementById('driverModal').style.display='flex';}
+        function closeDriverPortal(){document.getElementById('driverModal').style.display='none';if(driverPortalListener)db.ref('publicDriverOrders/'+driverPortalListener).off();driverPortalListener=null;}
+        async function loginDriverPortal(){const phone=publicPhone(document.getElementById('driverLoginPhone')?.value),code=document.getElementById('driverLoginCode')?.value.trim();if(phone.length<8||!code)return alert('Informe o WhatsApp e o código de acesso.');const idSnap=await db.ref('publicDriverLookup/'+phone).once('value');if(!idSnap.exists())return alert('Entregador não encontrado.');const id=idSnap.val(),accessSnap=await db.ref('publicDriverAccess/'+id).once('value'),access=accessSnap.val();if(!access||access.accessCode!==code)return alert('Código de acesso inválido.');driverPortalSession={id,name:access.name,phone};document.getElementById('driverLoginBox').style.display='none';if(driverPortalListener)db.ref('publicDriverOrders/'+driverPortalListener).off();driverPortalListener=id;db.ref('publicDriverOrders/'+id).on('value',snap=>renderDriverPortalOrders(snap.val()||{}));}
+        function driverAction(orderKey,status){if(!driverPortalSession)return;db.ref('driverActions').push({driverId:driverPortalSession.id,orderKey,status,createdAt:new Date().toISOString()});}
+        function renderDriverPortalOrders(data){const box=document.getElementById('driverPortalResult');if(!box)return;const rows=Object.entries(data).filter(([,o])=>!['entregue','cancelado'].includes(o.orderStatus));box.innerHTML=`<p><strong>Olá, ${escapeAdminText(driverPortalSession?.name||'entregador')}.</strong></p>`+(rows.length?rows.map(([key,o])=>`<div class="driver-order-card"><strong>Pedido #${escapeAdminText(o.orderId)}</strong><div class="tracking-muted">${escapeAdminText(o.clientName)} · ${escapeAdminText(o.address||'')}<br>Pagamento: ${escapeAdminText(o.payment||'')} · Total R$ ${Number(o.total||0).toFixed(2).replace('.',',')}</div>${o.clientPhone?`<a target="_blank" href="https://api.whatsapp.com/send?phone=55${String(o.clientPhone).replace(/\D/g,'')}">Falar com cliente</a><br>`:''}${o.orderStatus==='saiu_entrega'?`<button onclick="driverAction('${key}','entregue')">Confirmar entrega</button>`:`<button onclick="driverAction('${key}','saiu_entrega')">Saiu para entrega</button>`}</div>`).join(''):'<p class="tracking-muted">Nenhum pedido pendente.</p>');}
+        function publicPhone(value){return String(value||'').replace(/\D/g,'');}
+        async function syncPublicTracking(key,order){if(!order||!key)return;const driver=order.assignedDriverId&&deliverersData[order.assignedDriverId]?deliverersData[order.assignedDriverId]:null;const publicData={token:key,orderId:order.orderId||'',clientName:order.clientName||'',phone:publicPhone(order.clientPhone),orderStatus:order.orderStatus||'novo',deliveryStatus:order.deliveryStatus||'',fulfillment:order.fulfillment||'delivery',deliveryZone:order.deliveryZone||'',address:order.address||'',total:Number(order.total||0),delivery:Number(order.delivery||0),items:order.items||[],driverName:driver?.name||'',driverPhone:driver?.phone||'',updatedAt:order.updatedAt||new Date().toISOString()};await db.ref('publicTracking/'+key).set(publicData);if(publicData.phone)await db.ref('trackingLookup/'+publicData.phone).set(key);if(order.assignedDriverId){await db.ref('publicDriverOrders/'+order.assignedDriverId+'/'+key).set({...publicData,driverOrderKey:key});}else{const oldDriver=order.assignedDriverId||'';if(oldDriver)await db.ref('publicDriverOrders/'+oldDriver+'/'+key).remove();}}
+        function trackingStatusLabel(s){return ({novo:'Pedido recebido',preparo:'Preparando seu pedido',pronto:'Pedido pronto',saiu_entrega:'Saiu para entrega',entregue:'Pedido entregue',cancelado:'Pedido cancelado'})[s]||'Aguardando atualização';}
+        function playCustomerStatusSound(){try{if(notificationAudioContext){notificationAudioContext.resume();const o=notificationAudioContext.createOscillator(),g=notificationAudioContext.createGain();o.frequency.value=660;g.gain.value=.05;o.connect(g);g.connect(notificationAudioContext.destination);o.start();o.stop(notificationAudioContext.currentTime+.18);}}catch(e){}}
+        function renderCustomerTracking(data){const box=document.getElementById('trackingResult');if(!box||!data)return;const statuses=['novo','preparo','pronto','saiu_entrega','entregue'];const current=statuses.indexOf(data.orderStatus);const timeline=statuses.map((st,i)=>`<div class="tracking-status ${i<current?'done':''} ${st===data.orderStatus?'current':''}"><span class="tracking-dot"></span><div><strong>${trackingStatusLabel(st)}</strong>${st===data.orderStatus?'<div class="tracking-muted">Atualizado agora</div>':''}</div></div>`).join('');const driver=data.driverName&&data.orderStatus==='saiu_entrega'?`<div class="tracking-driver"><strong>🛵 ${escapeAdminText(data.driverName)} saiu com seu pedido</strong><br><span class="tracking-muted">Você pode falar diretamente com o entregador.</span>${data.driverPhone?`<br><a target="_blank" href="https://api.whatsapp.com/send?phone=55${String(data.driverPhone).replace(/\D/g,'')}">WhatsApp do entregador</a>`:''}</div>`:'';const confirmButton=data.orderStatus==='saiu_entrega'?`<div class="tracking-actions" style="margin-top:10px;"><button onclick="confirmCustomerDelivery('${data.token}')">✅ Confirmar que recebi</button></div>`:'';box.innerHTML=`<div class="delivery-admin-card"><strong>Pedido #${escapeAdminText(data.orderId)}</strong><div class="tracking-muted">${data.fulfillment==='pickup'?'Retirada na loja':'Entrega'} · Total R$ ${Number(data.total||0).toFixed(2).replace('.',',')}</div><div class="tracking-status-list">${data.orderStatus==='cancelado'?'<div class="tracking-status current"><span class="tracking-dot"></span><strong>Pedido cancelado</strong></div>':timeline}</div>${driver}${confirmButton}</div>`;if(lastCustomerTrackingStatus&&lastCustomerTrackingStatus!==data.orderStatus)playCustomerStatusSound();lastCustomerTrackingStatus=data.orderStatus;localStorage.setItem('prLastTrackingStatus',data.orderStatus);}
+        function subscribeCustomerTracking(token){if(!token)return;const changed=customerTrackingToken!==token;customerTrackingToken=token;if(changed)lastCustomerTrackingStatus='';localStorage.setItem('prLastTrackingToken',token);if(customerTrackingListener)db.ref('publicTracking/'+customerTrackingListener).off();customerTrackingListener=token;db.ref('publicTracking/'+token).on('value',s=>{if(s.exists())renderCustomerTracking(s.val());});}
+        async function findCustomerTracking(){const phone=publicPhone(document.getElementById('trackingPhone')?.value);if(phone.length<8)return alert('Informe o WhatsApp usado no pedido.');localStorage.setItem('prLastOrderPhone',phone);const snap=await db.ref('trackingLookup/'+phone).once('value');if(!snap.exists())return alert('Não encontrei um pedido para este número.');subscribeCustomerTracking(snap.val());}
+        function openCustomerTracking(token){document.getElementById('trackingModal').style.display='flex';const phone=localStorage.getItem('prLastOrderPhone')||'';const input=document.getElementById('trackingPhone');if(input&&!input.value)input.value=phone;if(token)subscribeCustomerTracking(token);else if(customerTrackingToken)subscribeCustomerTracking(customerTrackingToken);}
+        function minimizeCustomerTracking(){document.getElementById('trackingModal').style.display='none';}
+        function closeCustomerTracking(){document.getElementById('trackingModal').style.display='none';}
+        function unlockNotificationAudio(){try{const C=window.AudioContext||window.webkitAudioContext;if(C&&!notificationAudioContext)notificationAudioContext=new C();if(notificationAudioContext)notificationAudioContext.resume();}catch(e){}}
+
+        function handleNewOrderForPrinting(snapshot){const order=snapshot.val();if(!order||order.printStatus!=='pending')return;if(ordersReadyForNotifications&&order.timestamp&&Date.parse(order.timestamp)>=adminSessionStartedAt-2000&&!sessionStorage.getItem('prNotified_'+snapshot.key)){showNewOrderNotification(order);sessionStorage.setItem('prNotified_'+snapshot.key,'1');}if(printerConnection||printerMode==='bridge')printOrderAutomatically(snapshot.key,order);}
+
 
         function escapeAdminText(value) { return String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c])); }
-        const adminStatusLabels = { novo:'Novo', preparo:'Em preparo', pronto:'Pronto', entregue:'Entregue', cancelado:'Cancelado' };
-        const adminStatusOrder = ['novo','preparo','pronto','entregue'];
+        const adminStatusLabels = { novo:'Novo', preparo:'Em preparo', pronto:'Pronto', saiu_entrega:'Saiu para entrega', entregue:'Entregue', cancelado:'Cancelado' };
+        const adminStatusOrder = ['novo','preparo','pronto','saiu_entrega','entregue'];
         function initDeliveryData(){if(deliveryInitialized)return;deliveryInitialized=true;db.ref('deliverers').on('value',s=>{deliverersData=s.val()||{};renderDeliverers();renderAdminOrders(adminOrdersCache);});}
         function clearDelivererForm(){['deliveryDriverName','deliveryDriverPhone','deliveryDriverRate','deliveryDriverNote','deliveryDriverId'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});const a=document.getElementById('deliveryDriverActive');if(a)a.checked=true;}
-        function saveDeliverer(){const name=document.getElementById('deliveryDriverName')?.value.trim(),phone=document.getElementById('deliveryDriverPhone')?.value.trim();if(!name||phone.replace(/\D/g,'').length<10)return alert('Informe o nome e um WhatsApp válido com DDD.');const id=document.getElementById('deliveryDriverId')?.value||db.ref('deliverers').push().key;db.ref('deliverers/'+id).set({name,phone:phone.replace(/\D/g,''),rate:Number(document.getElementById('deliveryDriverRate')?.value||0),note:document.getElementById('deliveryDriverNote')?.value.trim()||'',active:document.getElementById('deliveryDriverActive')?.checked!==false,updatedAt:new Date().toISOString()}).then(()=>{clearDelivererForm();alert('Entregador salvo.');});}
+        function saveDeliverer(){const name=document.getElementById('deliveryDriverName')?.value.trim(),phone=document.getElementById('deliveryDriverPhone')?.value.trim();if(!name||phone.replace(/\D/g,'').length<10)return alert('Informe o nome e um WhatsApp válido com DDD.');const id=document.getElementById('deliveryDriverId')?.value||db.ref('deliverers').push().key,cleanPhone=phone.replace(/\D/g,''),old=deliverersData[id]||{},accessCode=old.accessCode||String(Math.floor(100000+Math.random()*900000));const data={name,phone:cleanPhone,rate:Number(document.getElementById('deliveryDriverRate')?.value||0),note:document.getElementById('deliveryDriverNote')?.value.trim()||'',active:document.getElementById('deliveryDriverActive')?.checked!==false,accessCode,updatedAt:new Date().toISOString()};Promise.all([db.ref('deliverers/'+id).set(data),db.ref('publicDriverAccess/'+id).set({id,name,phone:cleanPhone,accessCode,active:data.active}),db.ref('publicDriverLookup/'+cleanPhone).set(id)]).then(()=>{clearDelivererForm();alert('Entregador salvo. Código de acesso: '+accessCode);});}
         function editDeliverer(id){const d=deliverersData[id];if(!d)return;document.getElementById('deliveryDriverId').value=id;document.getElementById('deliveryDriverName').value=d.name||'';document.getElementById('deliveryDriverPhone').value=d.phone||'';document.getElementById('deliveryDriverRate').value=d.rate||'';document.getElementById('deliveryDriverNote').value=d.note||'';document.getElementById('deliveryDriverActive').checked=d.active!==false;document.getElementById('deliveryDriverName').scrollIntoView({behavior:'smooth',block:'center'});}
-        function deleteDeliverer(id){if(confirm('Excluir este entregador do cadastro?'))db.ref('deliverers/'+id).remove();}
-        function assignDelivererToOrder(key,id){const data=id?{assignedDriverId:id,deliveryStatus:'aguardando',assignedAt:new Date().toISOString()}:{assignedDriverId:null,deliveryStatus:null,assignedAt:null};db.ref('orders/'+key).update(data);}
+        function deleteDeliverer(id){if(confirm('Excluir este entregador do cadastro?')){const d=deliverersData[id];db.ref('deliverers/'+id).remove();db.ref('publicDriverAccess/'+id).remove();if(d?.phone)db.ref('publicDriverLookup/'+d.phone).remove();}}
+        async function assignDelivererToOrder(key,id){const data=id?{assignedDriverId:id,deliveryStatus:'aguardando',assignedAt:new Date().toISOString()}:{assignedDriverId:null,deliveryStatus:null,assignedAt:null};await db.ref('orders/'+key).update(data);const snap=await db.ref('orders/'+key).once('value');await syncPublicTracking(key,snap.val());}
         function driverMessage(order,driver){let t='🛵 *NOVA ENTREGA — PR BURGUER NA BRASA*\n';t+='Pedido #'+(order.orderId||'')+'\n';t+='Cliente: '+(order.clientName||'')+'\n';t+='WhatsApp do cliente: '+(order.clientPhone||'')+'\n';t+=(order.fulfillment==='pickup'?'Recebimento: RETIRADA NA LOJA\n':'Endereço: '+(order.address||'')+'\n');t+='Pagamento: '+(order.payment||'')+'\n';t+='Total para receber: R$ '+Number(order.total||0).toFixed(2).replace('.',',')+'\n';t+='Itens:\n';(order.items||[]).forEach(i=>{t+='• '+(i.qty||1)+'x '+(i.name||'')+'\n';if(i.isLancheCustom&&i.addonsDetails)(i.addonsDetails||[]).forEach(a=>t+='  + '+a.name+'\n');});t+='\nPor favor, confirme o recebimento do pedido.';return t;}
         async function sendOrderToDeliverer(key){const snap=await db.ref('orders/'+key).once('value'),order=snap.val(),driver=order&&deliverersData[order.assignedDriverId];if(!order||!driver)return alert('Selecione um entregador primeiro.');const phone=String(driver.phone||'').replace(/\D/g,'');if(phone.length<10)return alert('O entregador não tem um WhatsApp válido.');window.open('https://api.whatsapp.com/send?phone=55'+phone+'&text='+encodeURIComponent(driverMessage(order,driver)),'_blank');await db.ref('orders/'+key).update({deliveryStatus:'enviado',driverNotifiedAt:new Date().toISOString()});}
-        function setDeliveryStatus(key,status){db.ref('orders/'+key).update({deliveryStatus:status,deliveryStatusAt:new Date().toISOString()});}
-        function renderDeliverers(){const box=document.getElementById('deliverersList');if(box){const rows=Object.entries(deliverersData);box.innerHTML=rows.length?rows.map(([id,d])=>`<div class="management-row"><div><strong>${escapeAdminText(d.name)}</strong><small>${escapeAdminText(d.phone||'')} · ${d.active===false?'Inativo':'Ativo'}${d.note?' · '+escapeAdminText(d.note):''}</small></div><button onclick="editDeliverer('${id}')">Editar</button><button style="background:#552;color:#fff" onclick="deleteDeliverer('${id}')">Excluir</button></div>`).join(''):'<p class="ka-note">Nenhum entregador cadastrado.</p>';}const hist=document.getElementById('deliveryHistoryList');if(!hist)return;const done=Object.entries(adminOrdersCache).filter(([,o])=>o&&orderStatus(o)==='entregue'&&o.assignedDriverId);const sums={};done.forEach(([key,o])=>{const id=o.assignedDriverId;sums[id]??={count:0,total:0,delivery:0,rows:[]};sums[id].count++;sums[id].total+=Number(o.total||0);sums[id].delivery+=Number(o.delivery||0);sums[id].rows.push({key,o});});hist.innerHTML=Object.entries(sums).map(([id,x])=>`<details class="delivery-admin-card"><summary><strong>${escapeAdminText(deliverersData[id]?.name||'Entregador removido')}</strong> · ${x.count} entrega(s) · R$ ${x.total.toFixed(2).replace('.',',')}</summary><div class="delivery-history-row"><span>Total de pedidos</span><span>${x.count}</span><span>Faturamento</span><span>R$ ${x.total.toFixed(2).replace('.',',')}</span></div><div class="delivery-history-row"><span>Taxas de entrega</span><span>R$ ${x.delivery.toFixed(2).replace('.',',')}</span><span>Repasse estimado</span><span>R$ ${(x.count*Number(deliverersData[id]?.rate||0)).toFixed(2).replace('.',',')}</span></div>${x.rows.sort((a,b)=>String(b.o.deliveryCompletedAt||b.o.updatedAt||'').localeCompare(String(a.o.deliveryCompletedAt||a.o.updatedAt||''))).map(({key,o})=>`<div class="delivery-history-row"><strong>Pedido #${escapeAdminText(o.orderId||key.slice(-5))}</strong><span>${o.timestamp?new Date(o.timestamp).toLocaleDateString('pt-BR'):''}</span><span>${escapeAdminText(o.clientName||'Cliente')}</span><span>R$ ${Number(o.total||0).toFixed(2).replace('.',',')}</span></div>`).join('')}</details>`).join('')||'<p class="ka-note">Nenhuma entrega concluída ainda.</p>';}
+        async function setDeliveryStatus(key,status){const data={deliveryStatus:status,deliveryStatusAt:new Date().toISOString()};await db.ref('orders/'+key).update(data);const snap=await db.ref('orders/'+key).once('value');await syncPublicTracking(key,snap.val());}
+        function renderDeliverers(){const box=document.getElementById('deliverersList');if(box){const rows=Object.entries(deliverersData);box.innerHTML=rows.length?rows.map(([id,d])=>`<div class="management-row"><div><strong>${escapeAdminText(d.name)}</strong><small>${escapeAdminText(d.phone||'')} · ${d.active===false?'Inativo':'Ativo'}${d.note?' · '+escapeAdminText(d.note):''} · Código: ${escapeAdminText(d.accessCode||'—')}</small></div><button onclick="editDeliverer('${id}')">Editar</button><button style="background:#552;color:#fff" onclick="deleteDeliverer('${id}')">Excluir</button></div>`).join(''):'<p class="ka-note">Nenhum entregador cadastrado.</p>';}const hist=document.getElementById('deliveryHistoryList');if(!hist)return;const done=Object.entries(adminOrdersCache).filter(([,o])=>o&&orderStatus(o)==='entregue'&&o.assignedDriverId);const sums={};done.forEach(([key,o])=>{const id=o.assignedDriverId;sums[id]??={count:0,total:0,delivery:0,rows:[]};sums[id].count++;sums[id].total+=Number(o.total||0);sums[id].delivery+=Number(o.delivery||0);sums[id].rows.push({key,o});});hist.innerHTML=Object.entries(sums).map(([id,x])=>`<details class="delivery-admin-card"><summary><strong>${escapeAdminText(deliverersData[id]?.name||'Entregador removido')}</strong> · ${x.count} entrega(s) · R$ ${x.total.toFixed(2).replace('.',',')}</summary><div class="delivery-history-row"><span>Total de pedidos</span><span>${x.count}</span><span>Faturamento</span><span>R$ ${x.total.toFixed(2).replace('.',',')}</span></div><div class="delivery-history-row"><span>Taxas de entrega</span><span>R$ ${x.delivery.toFixed(2).replace('.',',')}</span><span>Repasse estimado</span><span>R$ ${(x.count*Number(deliverersData[id]?.rate||0)).toFixed(2).replace('.',',')}</span></div>${x.rows.sort((a,b)=>String(b.o.deliveryCompletedAt||b.o.updatedAt||'').localeCompare(String(a.o.deliveryCompletedAt||a.o.updatedAt||''))).map(({key,o})=>`<div class="delivery-history-row"><strong>Pedido #${escapeAdminText(o.orderId||key.slice(-5))}</strong><span>${o.timestamp?new Date(o.timestamp).toLocaleDateString('pt-BR'):''}</span><span>${escapeAdminText(o.clientName||'Cliente')}</span><span>R$ ${Number(o.total||0).toFixed(2).replace('.',',')}</span></div>`).join('')}</details>`).join('')||'<p class="ka-note">Nenhuma entrega concluída ainda.</p>';}
         function setAdminTab(tab) {
             activeAdminTab = tab;
             document.querySelectorAll('.admin-tab').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
@@ -1710,10 +1782,10 @@
         function renderOrderCard(key, order) {
             const items = (order.items || []).map(i => `${i.qty || 1}x ${escapeAdminText(i.name)}`).join('<br>');
             const time = order.timestamp ? new Date(order.timestamp).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}) : '';
-            const next = {novo:'preparo', preparo:'pronto', pronto:'entregue'}[orderStatus(order)];
+            const next = {novo:'preparo', preparo:'pronto', pronto:'saiu_entrega', saiu_entrega:'entregue'}[orderStatus(order)];
             const driverOptions = '<option value="">Sem entregador</option>' + Object.entries(deliverersData||{}).filter(([id,d])=>d.active!==false || id===order.assignedDriverId).map(([id,d])=>`<option value="${id}" ${id===order.assignedDriverId?'selected':''}>${escapeAdminText(d.name)}</option>`).join(''); const driverName=order.assignedDriverId&&deliverersData[order.assignedDriverId]?deliverersData[order.assignedDriverId].name:'Sem entregador'; const receive=order.fulfillment==='pickup'?'Retirada':'Entrega'; return `<article class="order-card"><h5>Pedido #${escapeAdminText(order.orderId || key.slice(-5))}</h5><div class="order-muted">${escapeAdminText(order.clientName || 'Cliente')} · ${time}<br>${receive} · ${items || 'Sem itens'}</div><div class="order-total">R$ ${Number(order.total||0).toFixed(2).replace('.', ',')}</div><div class="delivery-status">Entregador: ${escapeAdminText(driverName)}</div><select class="delivery-driver-select" onchange="assignDelivererToOrder('${key}',this.value)">${driverOptions}</select><div class="order-card-actions"><button onclick="previewOrder('${key}')">Ver cupom</button><button onclick="printOrderAgain('${key}')">Imprimir</button>${order.assignedDriverId ? `<button onclick="sendOrderToDeliverer('${key}')">WhatsApp entregador</button>${order.deliveryStatus!=='em_rota'&&orderStatus(order)!=='entregue'?`<button onclick="setDeliveryStatus('${key}','em_rota')">Em rota</button>`:''}` : ''}${next ? `<button class="next" onclick="updateOrderStatus('${key}','${next}')">${adminStatusLabels[next]}</button>` : ''}${orderStatus(order)!=='cancelado' ? `<button onclick="updateOrderStatus('${key}','cancelado')">Cancelar</button>` : ''}</div></article>`;
         }
-        async function updateOrderStatus(key, status) { try { const snap=await db.ref('orders/'+key).once('value'); const order=snap.val(); if(!order)return; const auto=managedSettings.kitchenAutoDeduct!==false; const now=new Date().toISOString(); if(status==='preparo'&&auto&&!order.stockDeducted){await moveKitchenStockForOrder(order,key,-1);await db.ref('orders/'+key).update({stockDeducted:true,stockDeductedAt:now});} if(status==='cancelado'&&order.stockDeducted&&!order.stockRestored){await moveKitchenStockForOrder(order,key,1);await db.ref('orders/'+key).update({stockRestored:true,stockRestoredAt:now});} const extra=status==='entregue'?{deliveryStatus:'entregue',deliveryCompletedAt:now}:{}; await db.ref('orders/'+key).update({orderStatus:status,updatedAt:now,...extra}); } catch(e){alert(e.message||'Não foi possível alterar o status do pedido.');} }
+        async function updateOrderStatus(key, status) { try { const snap=await db.ref('orders/'+key).once('value'); const order=snap.val(); if(!order)return; const auto=managedSettings.kitchenAutoDeduct!==false; const now=new Date().toISOString(); if(status==='preparo'&&auto&&!order.stockDeducted){await moveKitchenStockForOrder(order,key,-1);await db.ref('orders/'+key).update({stockDeducted:true,stockDeductedAt:now});} if(status==='cancelado'&&order.stockDeducted&&!order.stockRestored){await moveKitchenStockForOrder(order,key,1);await db.ref('orders/'+key).update({stockRestored:true,stockRestoredAt:now});} const extra=status==='entregue'?{deliveryStatus:'entregue',deliveryCompletedAt:now}:{}; await db.ref('orders/'+key).update({orderStatus:status,updatedAt:now,...extra}); const updated={...order,orderStatus:status,updatedAt:now,...extra}; await syncPublicTracking(key,updated); } catch(e){alert(e.message||'Não foi possível alterar o status do pedido.');} }
         function renderTopProducts(data) {
             const box = document.getElementById('adminTopProducts'); if (!box) return;
             const counts = {};
@@ -2125,9 +2197,10 @@
                 container.innerHTML += promoHtml;
             }
 
-            const currentDeliveryFee = selectedFulfillment === 'pickup' ? 0 : deliveryFee;
+            const currentDeliveryFee = getCurrentDeliveryFee();
+            renderDeliveryZoneSelector();
             let totalGeral = subtotal + currentDeliveryFee;
-            const feeText = document.getElementById('deliveryFeeText'); if (feeText) feeText.innerText = selectedFulfillment === 'pickup' ? 'R$ 0,00 (retirada)' : 'R$ ' + deliveryFee.toFixed(2).replace('.', ',');
+            const feeText = document.getElementById('deliveryFeeText'); if (feeText) feeText.innerText = selectedFulfillment === 'pickup' ? 'R$ 0,00 (retirada)' : 'R$ ' + currentDeliveryFee.toFixed(2).replace('.', ',');
             document.getElementById('cartFloat').style.display = 'flex';
             document.getElementById('cartCount').innerText = count + (count === 1 ? ' item' : ' itens');
             document.getElementById('cartTotalFloat').innerText = totalGeral.toFixed(2).replace('.', ',');
@@ -2135,9 +2208,10 @@
             document.getElementById('modalTotal').innerText = totalGeral.toFixed(2).replace('.', ',');
         }
 
-        function toggleModal(show) { document.getElementById('cartModal').style.display = show ? 'flex' : 'none'; }
+        function toggleModal(show) { document.getElementById('cartModal').style.display = show ? 'flex' : 'none'; if(show) { refreshCartDeliverySummary(); renderDeliveryZoneSelector(); } }
 
-        function selectFulfillment(mode){selectedFulfillment=mode;const delivery=document.getElementById('fulfillmentDelivery'),pickup=document.getElementById('fulfillmentPickup'),note=document.getElementById('fulfillmentNote'),label=document.getElementById('clientAddressLabel'),address=document.getElementById('clientAddress');delivery?.classList.toggle('selected',mode==='delivery');pickup?.classList.toggle('selected',mode==='pickup');if(mode==='pickup'){if(note)note.innerText='Retire o pedido no endereço da hamburgueria.';if(label)label.innerText='Observação para retirada (opcional):';if(address){address.required=false;address.placeholder='Ex.: retirar às 20h (opcional)';}}else{if(note)note.innerText='Receba no endereço informado.';if(label)label.innerText='Endereço completo de entrega:';if(address){address.required=true;address.placeholder='Rua, número, bairro e pontos de referência...';}}if(cart.length)renderCart();}
+        function refreshCartDeliverySummary(){const fee=getCurrentDeliveryFee(),feeText=document.getElementById('deliveryFeeText');if(feeText)feeText.textContent=selectedFulfillment==='pickup'?'R$ 0,00 (retirada)':'R$ '+fee.toFixed(2).replace('.',',');const subText=document.getElementById('modalSubtotal');const totalText=document.getElementById('modalTotal');const subtotal=subText?Number(String(subText.textContent||'0').replace(/\./g,'').replace(',','.')):0;if(totalText)totalText.textContent=(subtotal+fee).toFixed(2).replace('.',',');const float=document.getElementById('cartTotalFloat');if(float)float.textContent=(subtotal+fee).toFixed(2).replace('.',',');}
+        function selectFulfillment(mode){selectedFulfillment=mode==='pickup'?'pickup':'delivery';const delivery=document.getElementById('fulfillmentDelivery'),pickup=document.getElementById('fulfillmentPickup'),note=document.getElementById('fulfillmentNote'),label=document.getElementById('clientAddressLabel'),address=document.getElementById('clientAddress');delivery?.classList.toggle('selected',mode==='delivery');pickup?.classList.toggle('selected',mode==='pickup');if(mode==='pickup'){if(note)note.innerText='Retire o pedido no endereço da hamburgueria.';if(label)label.innerText='Observação para retirada (opcional):';if(address){address.required=false;address.placeholder='Ex.: retirar às 20h (opcional)';}}else{if(note)note.innerText='Receba no endereço informado.';if(label)label.innerText='Endereço completo de entrega:';if(address){address.required=true;address.placeholder='Rua, número, bairro e pontos de referência...';}}if(cart.length)renderCart();refreshCartDeliverySummary();}
 
         function selectPayment(method) {
             selectedPaymentMethod = method;
@@ -2169,6 +2243,9 @@
             if (!name) { alert('Por favor, informe seu nome.'); return; }
             if (!phoneClient) { alert('Por favor, informe seu WhatsApp/Telefone.'); return; }
             if (selectedFulfillment === 'delivery' && !address) { alert('Por favor, informe seu endereço completo.'); return; }
+            if (selectedFulfillment === 'delivery' && deliveryMode === 'zones' && !selectedDeliveryZone) { alert('Selecione seu bairro ou região.'); return; }
+            const currentDeliveryFee = getCurrentDeliveryFee();
+            const deliveryZoneName = selectedDeliveryZone && deliveryZonesData[selectedDeliveryZone] ? deliveryZonesData[selectedDeliveryZone].name : '';
             const finalAddress = selectedFulfillment === 'pickup' ? 'Retirada na loja' + (address ? ' — ' + address : '') : address;
             if (!selectedPaymentMethod) { alert('Por favor, selecione uma forma de pagamento.'); return; }
 
@@ -2192,7 +2269,7 @@
                 subtotal += (item.price * item.qty);
                 if (item.category === 'Hambúrgueres') totalBurgersInCart += item.qty;
             });
-            let totalFinal = subtotal + (selectedFulfillment === 'pickup' ? 0 : deliveryFee);
+            let totalFinal = subtotal + currentDeliveryFee;
 
             // Salva pedido no Firebase para ranqueamento em tempo real e histórico financeiro/CRM
             const orderPayload = {
@@ -2201,10 +2278,11 @@
                 clientPhone: phoneClient,
                 address: finalAddress,
                 fulfillment: selectedFulfillment,
+                deliveryZone: deliveryZoneName,
                 payment: selectedPaymentMethod + changeText,
                 items: cart,
                 subtotal: subtotal,
-                delivery: selectedFulfillment === 'pickup' ? 0 : deliveryFee,
+                delivery: currentDeliveryFee,
                 total: totalFinal,
                 timestamp: new Date().toISOString(),
                 printStatus: 'pending',
@@ -2214,6 +2292,9 @@
             const orderRef = db.ref('orders').push();
             orderPayload.firebaseKey = orderRef.key;
             orderRef.set(orderPayload).catch(error => console.error('Falha ao salvar pedido:', error));
+            localStorage.setItem('prLastOrderPhone', publicPhone(phoneClient));
+            localStorage.setItem('prLastTrackingToken', orderRef.key);
+            syncPublicTracking(orderRef.key, orderPayload);
 
             // Montagem da mensagem do WhatsApp
             let message = `🧾 *CUPOM DE PEDIDO #${orderNum}* 🧾\n`;
@@ -2256,11 +2337,12 @@
 
             message += `-------------------------------------------\n`;
             message += `💰 *SUBTOTAL:* R$ ${subtotal.toFixed(2).replace('.', ',')}\n`;
-            message += `🚚 *TAXA DE ENTREGA:* R$ ${deliveryFee.toFixed(2).replace('.', ',')}\n`;
+            message += selectedFulfillment === 'pickup' ? `🏪 *RETIRADA:* Sem taxa de entrega\n` : `🚚 *TAXA DE ENTREGA:* R$ ${currentDeliveryFee.toFixed(2).replace('.', ',')}${deliveryZoneName ? ' — '+deliveryZoneName : ''}\n`;
             message += `⭐ *TOTAL GERAL:* R$ ${totalFinal.toFixed(2).replace('.', ',')}\n`;
             message += `-------------------------------------------\n`;
             message += `⏱️ *Tempo de espera: ${managedSettings.waitTime || 40} minutos*\n\n🕒 _Obrigado pela preferência!_`;
 
+            openCustomerTracking(orderRef.key);
             const phone = "5519920124303";
             window.open(`https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`, '_blank');
             cart = [];
@@ -2372,5 +2454,6 @@
             }
         }
     </script>
+    <button class="driver-float" onclick="openDriverPortal()">🛵 Área do entregador</button>
 </body>
 </html>
