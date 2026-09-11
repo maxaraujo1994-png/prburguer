@@ -1768,19 +1768,20 @@
         function productKey(name) { return String(name || '').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'').slice(0,70); }
         function collectCatalogDefaults() {
             const result=[]; document.querySelectorAll('.product-card').forEach(card => { const n=card.querySelector('.product-name')?.innerText.trim(); if(!n)return; const d=card.querySelector('.product-desc')?.innerText.trim()||''; const p=(card.querySelector('.product-price')?.innerText||'').replace(/[^0-9,]/g,'').replace(',','.'); const section=card.closest('.category-section'); const cat=section?.id||'hamburgueres'; const id=productKey(n); card.dataset.productId=id; result.push({id,name:n,description:d,price:Number(p)||0,category:cat,image:card.querySelector('img')?.src||''}); }); return result.filter((v,i,a)=>a.findIndex(x=>x.id===v.id)===i); }
-        const CATALOG_CACHE_VERSION='catalog-v3';
-        function invalidateCatalogCache(){try{localStorage.removeItem('prCatalogCache');}catch(e){}}
-        function loadManagedCache(){try{if(navigator.onLine){invalidateCatalogCache();return;}const c=JSON.parse(localStorage.getItem('prCatalogCache')||'null');if(!c||c.version!==CATALOG_CACHE_VERSION)return;managedSettings=c.settings||{};managedOverrides=c.overrides||{};managedProducts=c.products||{};managedInventory=c.inventory||{};managedCategories=c.categories||{};deletedProducts=c.deleted||{};applyPublicSettings();applyManagedCategories();applyManagedCatalog();}catch(e){console.warn('Cache do catálogo indisponível',e);}}
+        const CATALOG_CACHE_VERSION='catalog-v2';
+        const catalogLiveParts={settings:false,overrides:false,products:false,inventory:false,categories:false,deleted:false};
+        function loadManagedCache(){try{const c=JSON.parse(localStorage.getItem('prCatalogCache')||'null');if(!c||c.version!==CATALOG_CACHE_VERSION)return;managedSettings=c.settings||{};managedOverrides=c.overrides||{};managedProducts=c.products||{};managedInventory=c.inventory||{};managedCategories=c.categories||{};deletedProducts=c.deleted||{};applyPublicSettings();applyManagedCategories();applyManagedCatalog();}catch(e){console.warn('Cache do catálogo indisponível',e);}}
         function saveManagedCache(){try{localStorage.setItem('prCatalogCache',JSON.stringify({version:CATALOG_CACHE_VERSION,settings:managedSettings,overrides:managedOverrides,products:managedProducts,inventory:managedInventory,categories:managedCategories,deleted:deletedProducts}));}catch(e){console.warn('Não foi possível salvar cache do catálogo',e);}}
+        function markCatalogPartLive(part){catalogLiveParts[part]=true;if(Object.values(catalogLiveParts).every(Boolean)){try{localStorage.removeItem('prCatalogCache');}catch(e){}saveManagedCache();}}
         function initManagementData() {
             catalogDefaults=collectCatalogDefaults();
             loadManagedCache();
-            db.ref('storeSettings').on('value', s=>{ managedSettings=s.val()||{}; saveManagedCache(); applyPublicSettings(); renderSettingsForm(); renderPrintEditor(); });
-            db.ref('menuOverrides').on('value', s=>{ managedOverrides=s.val()||{}; saveManagedCache(); applyManagedCatalog(); renderManagementProducts(); });
-            db.ref('menuProducts').on('value', s=>{ managedProducts=s.val()||{}; saveManagedCache(); applyManagedCatalog(); renderManagementProducts(); });
-            db.ref('inventory').on('value', s=>{ managedInventory=s.val()||{}; saveManagedCache(); applyManagedCatalog(); renderManagementStock(); });
-            db.ref('menuCategories').on('value', s=>{ managedCategories=s.val()||{}; saveManagedCache(); applyManagedCategories(); renderManagementCategories(); populateCategorySelect(); });
-            db.ref('deletedProducts').on('value', s=>{ deletedProducts=s.val()||{}; saveManagedCache(); applyManagedCatalog(); renderManagementProducts(); });
+            db.ref('storeSettings').on('value', s=>{ managedSettings=s.val()||{}; saveManagedCache(); markCatalogPartLive('settings'); applyPublicSettings(); renderSettingsForm(); renderPrintEditor(); });
+            db.ref('menuOverrides').on('value', s=>{ managedOverrides=s.val()||{}; saveManagedCache(); markCatalogPartLive('overrides'); applyManagedCatalog(); renderManagementProducts(); });
+            db.ref('menuProducts').on('value', s=>{ managedProducts=s.val()||{}; saveManagedCache(); markCatalogPartLive('products'); applyManagedCatalog(); renderManagementProducts(); });
+            db.ref('inventory').on('value', s=>{ managedInventory=s.val()||{}; saveManagedCache(); markCatalogPartLive('inventory'); applyManagedCatalog(); renderManagementStock(); });
+            db.ref('menuCategories').on('value', s=>{ managedCategories=s.val()||{}; saveManagedCache(); markCatalogPartLive('categories'); applyManagedCategories(); renderManagementCategories(); populateCategorySelect(); });
+            db.ref('deletedProducts').on('value', s=>{ deletedProducts=s.val()||{}; saveManagedCache(); markCatalogPartLive('deleted'); applyManagedCatalog(); renderManagementProducts(); });
         }
         const defaultCategoryNames={hamburgueres:'Hambúrgueres',combos:'Combos',adicionais:'Adicionais',refri:'Refri'};
         function allManagedCategories(){const list=Object.entries(defaultCategoryNames).map(([id,name])=>({id,name,...(managedCategories[id]||{})}));Object.entries(managedCategories).forEach(([id,x])=>{if(!list.some(c=>c.id===id))list.push({id,name:x.name||id,...x});});return list;}
